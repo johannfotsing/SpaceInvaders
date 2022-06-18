@@ -16,7 +16,7 @@
 #include "Cpu8080.h"
 #include <SDL2/SDL.h>
 
-struct s_Arcade
+struct s_SIArcade
 {
     ArcadeDisplay display;
     Cpu8080* cpu;

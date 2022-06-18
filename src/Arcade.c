@@ -1,5 +1,5 @@
 /**
- * @file Arcade.c
+ * @file SpaceInvadersArcade.c
  * @author Johann Fotsing (johann.fotsing@outlook.com)
  * @brief 
  * @version 0.1
@@ -23,106 +23,106 @@
 
 #include "Arcade_private.h"
 
-Arcade* initArcade(ArcadeDisplay disp)
+SpaceInvadersArcade* initArcade(ArcadeDisplay disp)
 {
-    Arcade* arc = (Arcade*) malloc(sizeof(Arcade));
+    SpaceInvadersArcade* arc = (SpaceInvadersArcade*) malloc(sizeof(SpaceInvadersArcade));
     arc->display = disp;
     Cpu8080Config cpuCfg = {4, 8, 64, 2.e+6};
     arc->cpu = initCpu8080(&cpuCfg);
 }
 
-void freeArcade(Arcade* a)
+void freeArcade(SpaceInvadersArcade* a)
 {
     freeCpu8080(a->cpu);
     free(a);
 }
 
-void onCoinPressed(Arcade* a)
+void onCoinPressed(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 0, 1);
 }
 
-void onCoinReleased(Arcade* a)
+void onCoinReleased(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 0, 0);
 }
 
-void onP2StartPressed(Arcade* a)
+void onP2StartPressed(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 1, 1);
 }
 
-void onP2StartReleased(Arcade* a)
+void onP2StartReleased(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 1, 0);
 }
 
-void onP1StartPressed(Arcade* a)
+void onP1StartPressed(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 2, 1);
 }
 
-void onP1StartReleased(Arcade* a)
+void onP1StartReleased(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 2, 0);
 }
 
-void onP1ShootPressed(Arcade* a)
+void onP1ShootPressed(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 4, 1);
 }
 
-void onP1ShootReleased(Arcade* a)
+void onP1ShootReleased(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 4, 0);
 }
 
-void onP1LeftPressed(Arcade* a)
+void onP1LeftPressed(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 5, 1);
 }
 
-void onP1LeftReleased(Arcade* a)
+void onP1LeftReleased(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 5, 0);
 }
 
-void onP1RightPressed(Arcade* a)
+void onP1RightPressed(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 6, 1);
 }
 
-void onP1RightReleased(Arcade* a)
+void onP1RightReleased(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 6, 0);
 }
 
-void onP2ShootPressed(Arcade* a)
+void onP2ShootPressed(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP2, 4, 1);
 }
 
-void onP2ShootReleased(Arcade* a)
+void onP2ShootReleased(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP2, 4, 0);
 }
 
-void onP2LeftPressed(Arcade* a)
+void onP2LeftPressed(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP2, 5, 1);
 }
 
-void onP2LeftReleased(Arcade* a)
+void onP2LeftReleased(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP2, 5, 0);
 }
 
-void onP2RightPressed(Arcade* a)
+void onP2RightPressed(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP2, 6, 1);
 }
 
-void onP2RightReleased(Arcade* a)
+void onP2RightReleased(SpaceInvadersArcade* a)
 {
     writeCpu8080IO(a->cpu, INP2, 6, 0);
 }
