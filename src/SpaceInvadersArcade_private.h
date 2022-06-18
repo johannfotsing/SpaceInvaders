@@ -12,7 +12,7 @@
 #ifndef ARCADE_PRIVATE
 #define ARCADE_PRIVATE
 
-#include "Arcade.h"
+#include "SpaceInvadersArcade.h"
 #include "Cpu8080.h"
 #include <SDL2/SDL.h>
 

@@ -21,7 +21,7 @@
 #define SOUND2      5
 #define WATCHDOG    6
 
-#include "Arcade_private.h"
+#include "SpaceInvadersArcade_private.h"
 
 SpaceInvadersArcade* initArcade(ArcadeDisplay disp)
 {
