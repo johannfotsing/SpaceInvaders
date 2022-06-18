@@ -18,9 +18,8 @@
 
 struct s_Arcade
 {
+    ArcadeDisplay display;
     Cpu8080* cpu;
-    SDL_Window* window;
-    SDL_Renderer* rd;
 };
 
 /// Callback for shift register emulation

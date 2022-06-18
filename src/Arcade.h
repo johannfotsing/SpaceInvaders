@@ -12,9 +12,18 @@
 #ifndef ARCADE
 #define ARCADE
 
+#include <SDL2/SDL.h>
+
 typedef struct s_Arcade Arcade;
 
-Arcade* initArcade();
+typedef struct s_ArcadeDisplay
+{
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    SDL_Texture* texture;
+} ArcadeDisplay;
+
+Arcade* initArcade(ArcadeDisplay disp);
 
 void onCoinPressed(Arcade* a);
 void onCoinReleased(Arcade* a);

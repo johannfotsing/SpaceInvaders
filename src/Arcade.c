@@ -23,6 +23,14 @@
 
 #include "Arcade_private.h"
 
+Arcade* initArcade(ArcadeDisplay disp)
+{
+    Arcade* arc = (Arcade*) malloc(sizeof(Arcade));
+    arc->display = disp;
+    Cpu8080Config cpuCfg = {4, 8, 64, 2.e+6};
+    arc->cpu = initCpu8080(&cpuCfg);
+}
+
 void onCoinPressed(Arcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 0, 1);
