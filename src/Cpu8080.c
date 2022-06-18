@@ -82,6 +82,29 @@ uint8_t readCpu8080MemoryAtHL(Cpu8080* cpu)
 /** IO operations **/
 /*******************/
 
+void writeCpu8080IO(Cpu8080* cpu, int port_number, int pin_number, uint8_t value)
+{
+    if (value == 1)
+    {
+        cpu->in[port_number].data |= (1 << pin_number);
+    }
+    else if (value == 0)
+    {
+        uint8_t mask = (1 << pin_number); mask = ~mask;
+        cpu->in[port_number].data &= mask;
+    }
+    else
+    {
+        fprintf(stderr, "Bit value is either 0 or 1.");
+        exit(0);
+    }
+}
+
+uint8_t readCpu8080IO(Cpu8080* cpu, int port_number, int pin_number)
+{
+
+}
+
 void writeCpu8080Port(Cpu8080* cpu, int port_number, uint8_t value)
 {
     cpu->in[port_number].data = value;

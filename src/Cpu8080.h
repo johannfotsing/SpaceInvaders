@@ -42,6 +42,26 @@ int disassembleCpu8080Op(Cpu8080* cpu);
 
 /**
  * @brief
+ *      This function reads a specific bit on an IO port on a 8080 CPU
+ * @param cpu           pointer to 8080 CPU object
+ * @param port_number   output port where the bit is read
+ * @param pin_number    pin number from where to read bit
+ * @return uint8_t      0 or 1
+ */
+uint8_t readCpu8080IO(Cpu8080* cpu, int port_number, int pin_number);
+
+/**
+ * @brief
+ *      This function writes a bit value on a specific pin of an IO port on a 8080 CPU
+ * @param cpu           pointer to 8080 CPU object
+ * @param port_number   input port where the bit is written
+ * @param pin_number    index of the pin where the bit will be written
+ * @param value         0 or 1
+ */
+void writeCpu8080IO(Cpu8080* cpu, int port_number, int pin_number, uint8_t value);
+
+/**
+ * @brief
  *      This function is used to read a byte from an output IO port on the CPU
  * @param cpu           pointer to a 8080 CPU
  * @param port_number   port number to read the byte from
