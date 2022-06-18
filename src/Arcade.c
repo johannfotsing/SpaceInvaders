@@ -112,3 +112,13 @@ void onP2RightReleased(Arcade* a)
 {
     writeCpu8080IO(a->cpu, INP2, 6, 0);
 }
+
+void onShiftDataAvailable(Cpu8080* cpu)
+{
+    static uint16_t shift_register = 0x0000;
+    uint16_t shift_data = readCpu8080Port(cpu, SHFT_DATA);
+    shift_register = ((shift_register >> 8) & 0x00ff) | ((shift_data << 8) & 0xff00);
+    uint8_t shift_offset = readCpu8080Port(cpu, SHFT_AMNT) & 0b111; // offset is 3 bits long max
+    uint8_t shift_result = ((shift_register << shift_offset) >> 8) & 0xff;
+    writeCpu8080Port(cpu, SHFT_IN, shift_result);
+}

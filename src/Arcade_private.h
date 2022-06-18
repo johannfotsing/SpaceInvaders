@@ -23,4 +23,7 @@ struct s_Arcade
     SDL_Renderer* rd;
 };
 
+/// Callback for shift register emulation
+void onShiftDataAvailable(Cpu8080* cpu);
+
 #endif // ARCADE_PRIVATE
