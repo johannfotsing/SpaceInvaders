@@ -31,6 +31,12 @@ Arcade* initArcade(ArcadeDisplay disp)
     arc->cpu = initCpu8080(&cpuCfg);
 }
 
+void freeArcade(Arcade* a)
+{
+    freeCpu8080(a->cpu);
+    free(a);
+}
+
 void onCoinPressed(Arcade* a)
 {
     writeCpu8080IO(a->cpu, INP1, 0, 1);

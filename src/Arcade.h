@@ -24,6 +24,7 @@ typedef struct s_ArcadeDisplay
 } ArcadeDisplay;
 
 Arcade* initArcade(ArcadeDisplay disp);
+void freeArcade(Arcade* a);
 
 void onCoinPressed(Arcade* a);
 void onCoinReleased(Arcade* a);
