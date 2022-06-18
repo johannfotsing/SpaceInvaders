@@ -79,7 +79,7 @@ uint8_t readCpu8080Port(Cpu8080* cpu, int port_number);
 void writeCpu8080Port(Cpu8080* cpu, int port_number, uint8_t value);
 
 /// Output callback signature.
-typedef void (*output_callback_t)();
+typedef void (*output_callback_t)(Cpu8080*);
 
 /**
  * @brief Register a function to be called on output operation in an 8080 CPU
