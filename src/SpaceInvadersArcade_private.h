@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef ARCADE_PRIVATE
-#define ARCADE_PRIVATE
+#ifndef SPACEINVADERS_ARCADE_PRIVATE
+#define SPACEINVADERS_ARCADE_PRIVATE
 
 #include "SpaceInvadersArcade.h"
 #include "Cpu8080.h"
@@ -25,4 +25,4 @@ struct s_SIArcade
 /// Callback for shift register emulation
 void onShiftDataAvailable(Cpu8080* cpu);
 
-#endif // ARCADE_PRIVATE
+#endif // SPACEINVADERS_ARCADE_PRIVATE

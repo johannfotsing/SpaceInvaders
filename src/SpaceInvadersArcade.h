@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef ARCADE
-#define ARCADE
+#ifndef SPACEINVADERS_ARCADE
+#define SPACEINVADERS_ARCADE
 
 #include <SDL2/SDL.h>
 
@@ -45,4 +45,4 @@ void onP2LeftReleased(SpaceInvadersArcade* a);
 void onP2RightPressed(SpaceInvadersArcade* a);
 void onP2RightReleased(SpaceInvadersArcade* a);
 
-#endif // ARCADE
+#endif // SPACEINVADERS_ARCADE
