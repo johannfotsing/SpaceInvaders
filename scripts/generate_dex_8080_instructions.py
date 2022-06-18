@@ -189,7 +189,7 @@ def generate_out_code(op_label, syntax, num_bytes):
     """
     OUT instruction writes the accumulator's value to an IO port.
     """
-    return "case {}: cpu->out[opcode[1]].data = cpu->a; cpu->pc += {}; break;\t\t// {}".format(op_label, num_bytes, syntax)
+    return "case {}: cpu->out[opcode[1]].data = cpu->a; (*cpu->io_callbacks[opcode[1]])(cpu); cpu->pc += {}; break;\t\t// {}".format(op_label, num_bytes, syntax)
 
 """
 Others

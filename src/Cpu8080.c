@@ -1266,7 +1266,7 @@ int emulateCpu8080Op(Cpu8080* cpu)
         cpu->pc = (cpu->pc << 8) | opcode[1];
         break;
     }
-    case 0xd3 : cpu->out[opcode[1]].data = cpu->a; cpu->pc += 2; break;		// OUT D8
+    case 0xd3 : cpu->out[opcode[1]].data = cpu->a; (*cpu->io_callbacks[opcode[1]])(cpu); cpu->pc += 2; break;		// OUT D8
     case 0xd4 :						// CNC adr
     {
         cpu->pc += 3;
