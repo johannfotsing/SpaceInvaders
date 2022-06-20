@@ -537,6 +537,7 @@ uint8_t cpu8080Cyles[] =
 
 int emulateCpu8080Op(Cpu8080* cpu, uint8_t* code)
 {
+    pthread_mutex_lock(&cpu->emulation_mutex);
     uint8_t* opcode;
     if (code == NULL) opcode = &cpu->memory[cpu->pc];
     else opcode = code;
@@ -1580,6 +1581,7 @@ int emulateCpu8080Op(Cpu8080* cpu, uint8_t* code)
 #ifdef PRINT_STATE
     printCpu8080State(cpu);
 #endif
+    pthread_mutex_unlock(&cpu->emulation_mutex);
     return cpu8080Cyles[*opcode];
 }
 

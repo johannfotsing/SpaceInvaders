@@ -2,6 +2,7 @@
 #define CPU_8080_PRIVATE_H
 
 #include "Cpu8080.h"
+#include <pthread.h>
 
 /// This structure describes the status register of a 8080 processor.
 typedef struct _8080Status
@@ -70,6 +71,9 @@ struct _8080
 
     // Clock
     double clock_freq;
+
+    // A mutex to handle emulation from main thread and interrupt threads
+    pthread_mutex_t emulation_mutex;
 };
 
 int emulateCpu8080Op(Cpu8080* cpu, uint8_t* code);
