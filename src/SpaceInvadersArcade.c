@@ -32,15 +32,16 @@ SpaceInvadersArcade* initArcade(ArcadeDisplay disp, const char* rom_folder_path)
     /// Load SpaceInvaders ROM files
     size_t len = strlen(rom_folder_path);
     size_t copy_len = rom_folder_path[len-1] == '/' ? len - 1 : len;
-    char* rom_file_path = malloc(copy_len + strlen("/invaders.h"));
+    size_t file_path_len = copy_len + strlen("/invaders.h");
+    char* rom_file_path = malloc(file_path_len);
     strncpy(rom_file_path, rom_folder_path, copy_len);
     strncpy(&rom_file_path[copy_len], "/invaders.h", strlen("/invaders.h"));
     loadCpu8080ROM(arc->cpu, rom_file_path, 0);
-    strncpy(&rom_file_path[copy_len], "/invaders.g", strlen("/invaders.h"));
+    rom_file_path[file_path_len-1] = 'g';
     loadCpu8080ROM(arc->cpu, rom_file_path, 0x800);
-    strncpy(&rom_file_path[copy_len], "/invaders.f", strlen("/invaders.h"));
+    rom_file_path[file_path_len-1] = 'f';
     loadCpu8080ROM(arc->cpu, rom_file_path, 0x1000);
-    strncpy(&rom_file_path[copy_len], "/invaders.e", strlen("/invaders.h"));
+    rom_file_path[file_path_len-1] = 'e';
     loadCpu8080ROM(arc->cpu, rom_file_path, 0x1800);
 }
 
