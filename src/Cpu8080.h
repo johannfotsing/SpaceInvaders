@@ -24,21 +24,7 @@ Cpu8080* initCpu8080(const Cpu8080Config* conf);
 /// Destructor
 void freeCpu8080(Cpu8080*);
 
-/**
- * @brief
- *      This function emulates the next operation to be executed in the CPU according to its program counter.
- * @param cpu    pointer to a 8080 CPU object.
- * @return int   the number of clock cycles consumed by the operation.
- */
-int emulateCpu8080Op(Cpu8080* cpu);
-
-/**
- * @brief 
- *      This function transforms the next operation code into human readable assembly code. 
- * @param cpu       pointer to a 8080 CPU object
- * @return int      the number of bytes used to encode the disassembled operation.
- */
-int disassembleCpu8080Op(Cpu8080* cpu);
+int emulateCpu8080(Cpu8080* cpu);
 
 /**
  * @brief
@@ -117,5 +103,16 @@ uint8_t readCpu8080Memory(Cpu8080* cpu, uint16_t adr);
  * @param memory_offset     memory address in CPU where the file write should start
  */
 void loadCpu8080ROM(Cpu8080* cpu, const char* rom_path, uint16_t memory_offset);
+
+/**
+ * @brief 
+ *      When an interruption is generated, the normal flow of execution is interrupted. 
+ * The interrupt source puts instruction bytes on the data bus that the CPU reads and executes.
+ * Generally, the interrupt instruction is used to call a predefined function in ROM using RST instructions; 
+ * this way the program counter is pushed on stack and the program can resume after the interrupt routine. 
+ * @param cpu                   pointer to a 8080 CPU object
+ * @param interrupt_opcode      instruction to execute as Interrupt Service Routine
+ */
+void generateCpu8080Interrupt(Cpu8080* cpu, const uint8_t* interrupt_opcode);
 
 #endif // CPU_8080_H

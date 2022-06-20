@@ -72,6 +72,10 @@ struct _8080
     double clock_freq;
 };
 
+int emulateCpu8080Op(Cpu8080* cpu, uint8_t* code);
+
+int disassembleCpu8080Op(Cpu8080* cpu, uint8_t* code);
+
 /**
  * @brief
  *      Write a byte into memory address pointed by HL register pair

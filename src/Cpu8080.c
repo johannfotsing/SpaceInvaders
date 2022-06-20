@@ -240,20 +240,22 @@ void printCpu8080State(Cpu8080* cpu)
 /** Emulation **/
 /***************/
 
-int disassembleCpu8080Op(Cpu8080* cpu)
+int disassembleCpu8080Op(Cpu8080* cpu, uint8_t* code)
 {
-    uint8_t* code = &cpu->memory[cpu->pc];
+    uint8_t* opcode;
+    if (code) opcode = code;
+    else opcode = &cpu->memory[cpu->pc];
     int opbytes = 1;
     printf("%04x\t", cpu->pc);
-    switch(*code)
+    switch(*opcode)
     {
         case 0x00: printf("NOP"); break;
-        case 0x01: printf("LXI      B, #$%02x%02x", code[2], code[1]); opbytes=3; break;
+        case 0x01: printf("LXI      B, #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;
         case 0x02: printf("STAX     B"); break;
         case 0x03: printf("INX      B"); break;
         case 0x04: printf("INR      B"); break;
         case 0x05: printf("DCR      B"); break;
-        case 0x06: printf("MVI      B, #$%02x", code[1]); opbytes=2; break;
+        case 0x06: printf("MVI      B, #$%02x", opcode[1]); opbytes=2; break;
         case 0x07: printf("RLC      B"); break;
         case 0x08: printf("NOP"); break;
         case 0x09: printf("DAD      B"); break;
@@ -261,15 +263,15 @@ int disassembleCpu8080Op(Cpu8080* cpu)
         case 0x0b: printf("DCX      B"); break;
         case 0x0c: printf("INR      C"); break;                                                   //     1     Z, S, P, AC     C <- C+1
         case 0x0d: printf("DCR      C"); break;                                                   //     1     Z, S, P, AC     C <-C-1
-        case 0x0e: printf("MVI      C, #$%02x", code[1]); opbytes=2; break;                       // D8  2          C <- byte 2
+        case 0x0e: printf("MVI      C, #$%02x", opcode[1]); opbytes=2; break;                       // D8  2          C <- byte 2
         case 0x0f: printf("RRC"); break;                                                          //     1     CY     A = A >> 1; bit 7 = prev bit 0; CY = prev bit 0
         case 0x10: printf("NOP"); break;               
-        case 0x11: printf("LXI      D, #$%02x%02x", code[2], code[1]); opbytes=3; break;          // D16 3          D <- byte 3, E <- byte 2
+        case 0x11: printf("LXI      D, #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;          // D16 3          D <- byte 3, E <- byte 2
         case 0x12: printf("STAX     D"); break;                                                   //     1          (DE) <- A
         case 0x13: printf("INX      D"); break;                                                   //     1          DE <- DE + 1
         case 0x14: printf("INR      D"); break;                                                   //     1     Z, S, P, AC     D <- D+1
         case 0x15: printf("DCR      D"); break;                                                   //     1     Z, S, P, AC     D <- D-1
-        case 0x16: printf("MVI      D, #$%02x", code[1]); opbytes=2; break;                       // D8  2          D <- byte 2
+        case 0x16: printf("MVI      D, #$%02x", opcode[1]); opbytes=2; break;                       // D8  2          D <- byte 2
         case 0x17: printf("RAL"); break;                                                          //     1     CY     A = A << 1; bit 0 = prev CY; CY = prev bit 7
         case 0x18: printf("NOP"); break;
         case 0x19: printf("DAD      D"); break;                                                   //     1     CY     HL = HL + DE
@@ -277,39 +279,39 @@ int disassembleCpu8080Op(Cpu8080* cpu)
         case 0x1b: printf("DCX      D"); break;                                                   //     1          DE = DE-1
         case 0x1c: printf("INR      E"); break;                                                   //     1     Z, S, P, AC     E <-E+1
         case 0x1d: printf("DCR      E"); break;                                                   //     1     Z, S, P, AC     E <- E-1
-        case 0x1e: printf("MVI      E, #$%02x", code[1]); opbytes=2; break;                       // D8  2          E <- byte 2
+        case 0x1e: printf("MVI      E, #$%02x", opcode[1]); opbytes=2; break;                       // D8  2          E <- byte 2
         case 0x1f: printf("RAR"); break;                                                          //     1     CY     A = A >> 1; bit 7 = prev bit 7; CY = prev bit 0
         case 0x20: printf("RIM"); break;                                                          //     1          special
-        case 0x21: printf("LXI      H, #$%02x%02x", code[2], code[1]); opbytes=3; break;          //D16  3          H <- byte 3, L <- byte 2
-        case 0x22: printf("SHLD     #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          (adr) <-L; (adr+1)<-H TODO: check
+        case 0x21: printf("LXI      H, #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;          //D16  3          H <- byte 3, L <- byte 2
+        case 0x22: printf("SHLD     #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          (adr) <-L; (adr+1)<-H TODO: check
         case 0x23: printf("INX      H"); break;                                                   //     1          HL <- HL + 1
         case 0x24: printf("INR      H"); break;                                                   //     1     Z, S, P, AC     H <- H+1
         case 0x25: printf("DCR      H"); break;                                                   //     1     Z, S, P, AC     H <- H-1
-        case 0x26: printf("MVI      H, #$%02x", code[1]); opbytes=2; break;                       // D8  2          L <- byte 2
+        case 0x26: printf("MVI      H, #$%02x", opcode[1]); opbytes=2; break;                       // D8  2          L <- byte 2
         case 0x27: printf("DAA"); break;                                                          //     1          special
         case 0x28: printf("NOP"); break;
         case 0x29: printf("DAD      H"); break;                                                   //     1     CY     HL = HL + HI
-        case 0x2a: printf("LHLD     #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          L <- (adr); H<-(adr+1)
+        case 0x2a: printf("LHLD     #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          L <- (adr); H<-(adr+1)
         case 0x2b: printf("DCX      H"); break;                                                   //     1          HL = HL-1
         case 0x2c: printf("INR      L"); break;                                                   //     1     Z, S, P, AC     L <- L+1
         case 0x2d: printf("DCR      L"); break;                                                   //     1     Z, S, P, AC     L <- L-1
-        case 0x2e: printf("MVI      L, #$%02x", code[1]); opbytes=2; break;                       //D8   2          L <- byte 2
+        case 0x2e: printf("MVI      L, #$%02x", opcode[1]); opbytes=2; break;                       //D8   2          L <- byte 2
         case 0x2f: printf("CMA"); break;                                                          //     1          A <- !A
         case 0x30: printf("SIM"); break;                                                          //     1          special
-        case 0x31: printf("LXI      SP, #$%02x%02x", code[2], code[1]); opbytes=3; break;         //D16  3          SP.hi <- byte 3, SP.lo <- byte 2
-        case 0x32: printf("STA      #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          (adr) <- A
+        case 0x31: printf("LXI      SP, #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;         //D16  3          SP.hi <- byte 3, SP.lo <- byte 2
+        case 0x32: printf("STA      #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          (adr) <- A
         case 0x33: printf("INX      SP"); break;                                                  //     1          SP = SP + 1
         case 0x34: printf("INR      M"); break;                                                   //     1     Z, S, P, AC     (HL) <- (HL)+1
         case 0x35: printf("DCR      M"); break;                                                   //     1     Z, S, P, AC     (HL) <- (HL)-1
-        case 0x36: printf("MVI      M, #$%02x", code[1]); opbytes=2; break;                       //D8   2          (HL) <- byte 2
+        case 0x36: printf("MVI      M, #$%02x", opcode[1]); opbytes=2; break;                       //D8   2          (HL) <- byte 2
         case 0x37: printf("STC"); break;                                                          //     1     CY     CY = 1
         case 0x38: printf("NOP"); break;               
         case 0x39: printf("DAD      SP"); break;                                                  //     1     CY     HL = HL + SP
-        case 0x3a: printf("LDA      #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          A <- (adr)
+        case 0x3a: printf("LDA      #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          A <- (adr)
         case 0x3b: printf("DCX      SP"); break;                                                  //     1          SP = SP-1
         case 0x3c: printf("INR      A"); break;                                                   //     1     Z, S, P, AC     A <- A+1
         case 0x3d: printf("DCR      A"); break;                                                   //     1     Z, S, P, AC     A <- A-1
-        case 0x3e: printf("MVI      A, #$%02x", code[1]); opbytes=2; break;                       //D8   2          A <- byte 2
+        case 0x3e: printf("MVI      A, #$%02x", opcode[1]); opbytes=2; break;                       //D8   2          A <- byte 2
         case 0x3f: printf("CMC"); break;                                                          //     1          CY     CY=!CY
         case 0x40: printf("MOV      B, B"); break;                                                //     1          B <- B
         case 0x41: printf("MOV      B, C"); break;                                                //     1          B <- C
@@ -441,69 +443,69 @@ int disassembleCpu8080Op(Cpu8080* cpu)
         case 0xbf: printf("CMP      A"); break;                                                   //     1     Z, S, P, CY, AC     A - A
         case 0xc0: printf("RNZ"); break;                                                          //     1     if NZ, RET
         case 0xc1: printf("POP      B"); break;                                                   //     1     C <- (sp); B <- (sp+1); sp <- sp+2
-        case 0xc2: printf("JNZ      #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if NZ, PC <- adr
-        case 0xc3: printf("JMP      #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          PC <= adr
-        case 0xc4: printf("CNZ      #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if NZ, CALL adr
+        case 0xc2: printf("JNZ      #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if NZ, PC <- adr
+        case 0xc3: printf("JMP      #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          PC <= adr
+        case 0xc4: printf("CNZ      #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if NZ, CALL adr
         case 0xc5: printf("PUSH     B"); break;                                                   //     1          (sp-2)<-C; (sp-1)<-B; sp <- sp - 2
-        case 0xc6: printf("ADI      #$%02x", code[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A + byte
+        case 0xc6: printf("ADI      #$%02x", opcode[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A + byte
         case 0xc7: printf("RST      0"); break;                                                   //     1          CALL $0
         case 0xc8: printf("RZ"); break;                                                           //     1          if Z, RET
         case 0xc9: printf("RET"); break;                                                          //     1          PC.lo <- (sp); PC.hi<-(sp+1); SP <- SP+2
-        case 0xca: printf("JZ       #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if Z, PC <- adr
+        case 0xca: printf("JZ       #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if Z, PC <- adr
         case 0xcb: printf("NOP"); break;
-        case 0xcc: printf("CZ       #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if Z, CALL adr
-        case 0xcd: printf("CALL     #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          (SP-1)<-PC.hi;(SP-2)<-PC.lo;SP<-SP+2;PC=adr
-        case 0xce: printf("ACI      #$%02x", code[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A + data + CY
+        case 0xcc: printf("CZ       #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if Z, CALL adr
+        case 0xcd: printf("CALL     #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          (SP-1)<-PC.hi;(SP-2)<-PC.lo;SP<-SP+2;PC=adr
+        case 0xce: printf("ACI      #$%02x", opcode[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A + data + CY
         case 0xcf: printf("RST      1"); break;                                                   //     1          CALL $8
         case 0xd0: printf("RNC"); break;                                                          //     1          if NCY, RET
         case 0xd1: printf("POP      D"); break;                                                   //     1          E <- (sp); D <- (sp+1); sp <- sp+2
-        case 0xd2: printf("JNC      #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if NCY, PC<-adr
-        case 0xd3: printf("OUT      #$%02x", code[1]); opbytes=2; break;                          //D8   2          special
-        case 0xd4: printf("CNC      #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if NCY, CALL adr
+        case 0xd2: printf("JNC      #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if NCY, PC<-adr
+        case 0xd3: printf("OUT      #$%02x", opcode[1]); opbytes=2; break;                          //D8   2          special
+        case 0xd4: printf("CNC      #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if NCY, CALL adr
         case 0xd5: printf("PUSH     D"); break;                                                   //     1          (sp-2)<-E; (sp-1)<-D; sp <- sp - 2
-        case 0xd6: printf("SUI      #$%02x", code[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A - data
+        case 0xd6: printf("SUI      #$%02x", opcode[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A - data
         case 0xd7: printf("RST      2"); break;                                                   //     1          CALL $10
         case 0xd8: printf("RC"); break;                                                           //     1          if CY, RET
         case 0xd9: printf("NOP"); break;          
-        case 0xda: printf("JC       #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if CY, PC<-adr
-        case 0xdb: printf("IN       #$%02x", code[1]); opbytes=2; break;                          //D8   2          special
-        case 0xdc: printf("CC       #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if CY, CALL adr
+        case 0xda: printf("JC       #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if CY, PC<-adr
+        case 0xdb: printf("IN       #$%02x", opcode[1]); opbytes=2; break;                          //D8   2          special
+        case 0xdc: printf("CC       #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if CY, CALL adr
         case 0xdd: printf("NOP"); break;               
-        case 0xde: printf("SBI      #$%02x", code[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A - data - CY
+        case 0xde: printf("SBI      #$%02x", opcode[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A - data - CY
         case 0xdf: printf("RST      3"); break;                                                   //     1          CALL $18
         case 0xe0: printf("RPO"); break;                                                          //     1          if PO, RET
         case 0xe1: printf("POP      H"); break;                                                   //     1          L <- (sp); H <- (sp+1); sp <- sp+2
-        case 0xe2: printf("JPO      #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if PO, PC <- adr
+        case 0xe2: printf("JPO      #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if PO, PC <- adr
         case 0xe3: printf("XTHL"); break;                                                         //     1          L <-> (SP); H <-> (SP+1)
-        case 0xe4: printf("CPO      #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if PO, CALL adr
+        case 0xe4: printf("CPO      #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if PO, CALL adr
         case 0xe5: printf("PUSH     H"); break;                                                   //     1          (sp-2)<-L; (sp-1)<-H; sp <- sp - 2
-        case 0xe6: printf("ANI      #$%02x", code[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A & data
+        case 0xe6: printf("ANI      #$%02x", opcode[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A & data
         case 0xe7: printf("RST      4"); break;                                                   //     1          CALL $20
         case 0xe8: printf("RPE"); break;                                                          //     1          if PE, RET
         case 0xe9: printf("PCHL"); break;                                                         //     1          PC.hi <- H; PC.lo <- L
-        case 0xea: printf("JPE      #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if PE, PC <- adr
+        case 0xea: printf("JPE      #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if PE, PC <- adr
         case 0xeb: printf("XCHG"); break;                                                         //     1          H <-> D; L <-> E
-        case 0xec: printf("CPE      #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if PE, CALL adr
+        case 0xec: printf("CPE      #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if PE, CALL adr
         case 0xed: printf("NOP"); break;
-        case 0xee: printf("XRI      #$%02x", code[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A ^ data
+        case 0xee: printf("XRI      #$%02x", opcode[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A ^ data
         case 0xef: printf("RST      5"); break;                                                   //     1          CALL $28
         case 0xf0: printf("RP"); break;                                                           //     1          if P, RET
         case 0xf1: printf("POP      PSW"); break;                                                 //     1          flags <- (sp); A <- (sp+1); sp <- sp+2
-        case 0xf2: printf("JP       #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if P=1 PC <- adr
+        case 0xf2: printf("JP       #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if P=1 PC <- adr
         case 0xf3: printf("DI"); break;                                                           //     1          special
-        case 0xf4: printf("CP       #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if P, PC <- adr
+        case 0xf4: printf("CP       #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if P, PC <- adr
         case 0xf5: printf("PUSH     PSW"); break;                                                 //     1          (sp-2)<-flags; (sp-1)<-A; sp <- sp - 2
-        case 0xf6: printf("ORI      #$%02x", code[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A | data
+        case 0xf6: printf("ORI      #$%02x", opcode[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A <- A | data
         case 0xf7: printf("RST      6"); break;                                                   //     1          CALL $30
         case 0xf8: printf("RM"); break;                                                           //     1          if M, RET
         case 0xf9: printf("SPHL"); break;                                                         //     1          SP=HL
-        case 0xfa: printf("JM       #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if M, PC <- adr
+        case 0xfa: printf("JM       #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if M, PC <- adr
         case 0xfb: printf("EI"); break;                                                           //     1          special
-        case 0xfc: printf("CM       #$%02x%02x", code[2], code[1]); opbytes=3; break;             //adr  3          if M, CALL adr
+        case 0xfc: printf("CM       #$%02x%02x", opcode[2], opcode[1]); opbytes=3; break;             //adr  3          if M, CALL adr
         case 0xfd: printf("NOP"); break;
-        case 0xfe: printf("CPI      #$%02x", code[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A - data
+        case 0xfe: printf("CPI      #$%02x", opcode[1]); opbytes=2; break;                          //D8   2     Z, S, P, CY, AC     A - data
         case 0xff: printf("RST      7"); break;                                                   //     1          CALL $38
-        default: printf("Unknown code."); break;
+        default: printf("Unknown code.\n"); return 0;
     }
     printf("\n");
     return opbytes;
@@ -533,9 +535,11 @@ uint8_t cpu8080Cyles[] =
 	11, 10, 10, 4, 17, 11, 7, 11, 11, 5, 10, 4, 17, 17, 7, 11, 
 };
 
-int emulateCpu8080Op(Cpu8080* cpu)
+int emulateCpu8080Op(Cpu8080* cpu, uint8_t* code)
 {
-    uint8_t* opcode = &cpu->memory[cpu->pc];
+    uint8_t* opcode;
+    if (code == NULL) opcode = &cpu->memory[cpu->pc];
+    else opcode = code;
 #ifdef PRINT_OPS
     disassembleCpu8080Op(cpu);
 #endif
@@ -1577,4 +1581,19 @@ int emulateCpu8080Op(Cpu8080* cpu)
     printCpu8080State(cpu);
 #endif
     return cpu8080Cyles[*opcode];
+}
+
+int emulateCpu8080(Cpu8080* cpu)
+{
+    return emulateCpu8080Op(cpu, NULL);
+}
+
+void generateCpu8080Interrupt(Cpu8080* cpu, const uint8_t* interrupt_opcode)
+{
+    if (!cpu->interrupt_enabled) return;
+    if (disassembleCpu8080Op(cpu, interrupt_opcode) == 0) exit(1);
+    cpu->interrupt_enabled = 0;
+    emulateCpu8080Op(cpu, interrupt_opcode);
+    // It is assumed that the interrupt service routine will enable interrupts at the end of its execution
+    // TODO: check if previous statement is TRUE.
 }
