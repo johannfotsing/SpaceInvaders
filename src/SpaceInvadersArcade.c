@@ -23,12 +23,25 @@
 
 #include "SpaceInvadersArcade_private.h"
 
-SpaceInvadersArcade* initArcade(ArcadeDisplay disp)
+SpaceInvadersArcade* initArcade(ArcadeDisplay disp, const char* rom_folder_path)
 {
     SpaceInvadersArcade* arc = (SpaceInvadersArcade*) malloc(sizeof(SpaceInvadersArcade));
     arc->display = disp;
     Cpu8080Config cpuCfg = {4, 8, 64, 2.e+6};
     arc->cpu = initCpu8080(&cpuCfg);
+    /// Load SpaceInvaders ROM files
+    size_t len = strlen(rom_folder_path);
+    size_t copy_len = rom_folder_path[len-1] == '/' ? len - 1 : len;
+    char* rom_file_path = malloc(copy_len + strlen("/invaders.h"));
+    strncpy(rom_file_path, rom_folder_path, copy_len);
+    strncpy(&rom_file_path[copy_len], "/invaders.h", strlen("/invaders.h"));
+    loadCpu8080ROM(arc->cpu, rom_file_path, 0);
+    strncpy(&rom_file_path[copy_len], "/invaders.g", strlen("/invaders.h"));
+    loadCpu8080ROM(arc->cpu, rom_file_path, 0x800);
+    strncpy(&rom_file_path[copy_len], "/invaders.f", strlen("/invaders.h"));
+    loadCpu8080ROM(arc->cpu, rom_file_path, 0x1000);
+    strncpy(&rom_file_path[copy_len], "/invaders.e", strlen("/invaders.h"));
+    loadCpu8080ROM(arc->cpu, rom_file_path, 0x1800);
 }
 
 void freeArcade(SpaceInvadersArcade* a)

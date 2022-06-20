@@ -23,7 +23,7 @@ typedef struct s_ArcadeDisplay
     SDL_Texture* texture;
 } ArcadeDisplay;
 
-SpaceInvadersArcade* initArcade(ArcadeDisplay disp);
+SpaceInvadersArcade* initArcade(ArcadeDisplay disp, const char* rom_folder);
 void freeArcade(SpaceInvadersArcade* a);
 
 void onCoinPressed(SpaceInvadersArcade* a);
