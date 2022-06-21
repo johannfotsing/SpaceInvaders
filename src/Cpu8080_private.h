@@ -70,15 +70,15 @@ struct _8080
     output_callback_t* io_callbacks;
 
     // Clock
-    double clock_freq;
+    double nsec_per_cycle;
 
     // A mutex to handle emulation from main thread and interrupt threads
     pthread_mutex_t emulation_mutex;
 };
 
-int emulateCpu8080Op(Cpu8080* cpu, uint8_t* code);
+int emulateCpu8080Op(Cpu8080* cpu, const uint8_t* code);
 
-int disassembleCpu8080Op(Cpu8080* cpu, uint8_t* code);
+int disassembleCpu8080Op(Cpu8080* cpu, const uint8_t* code);
 
 /**
  * @brief

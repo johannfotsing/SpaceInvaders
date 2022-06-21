@@ -2,6 +2,7 @@
 * This file contains the implementation details related to the 8080 processor
 */
 
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "Cpu8080.h"
@@ -14,7 +15,7 @@ Cpu8080* initCpu8080(const Cpu8080Config* conf)
 {
     // Allocate CPU memory space
     Cpu8080* c = (Cpu8080*) malloc(sizeof(Cpu8080));
-    c->clock_freq = conf->frequency;
+    c->nsec_per_cycle = 1.e+9/conf->frequency;
     // Allocate memory
     size_t mem_bytes = conf->memory_size_kb*1024*sizeof(uint8_t);
     c->memory = (uint8_t*) malloc(mem_bytes);
@@ -240,9 +241,9 @@ void printCpu8080State(Cpu8080* cpu)
 /** Emulation **/
 /***************/
 
-int disassembleCpu8080Op(Cpu8080* cpu, uint8_t* code)
+int disassembleCpu8080Op(Cpu8080* cpu, const uint8_t* code)
 {
-    uint8_t* opcode;
+    const uint8_t* opcode;
     if (code) opcode = code;
     else opcode = &cpu->memory[cpu->pc];
     int opbytes = 1;
@@ -512,7 +513,7 @@ int disassembleCpu8080Op(Cpu8080* cpu, uint8_t* code)
 }
 
 /// Number of cycles for each instruction of the 8080 CPU
-uint8_t cpu8080Cyles[] = 
+uint8_t cpu8080Cycles[] = 
 {
 	4, 10, 7, 5, 5, 5, 7, 4, 4, 10, 7, 5, 5, 5, 7, 4, //0x00..0x0f
 	4, 10, 7, 5, 5, 5, 7, 4, 4, 10, 7, 5, 5, 5, 7, 4, //0x10..0x1f
@@ -535,10 +536,12 @@ uint8_t cpu8080Cyles[] =
 	11, 10, 10, 4, 17, 11, 7, 11, 11, 5, 10, 4, 17, 17, 7, 11, 
 };
 
-int emulateCpu8080Op(Cpu8080* cpu, uint8_t* code)
+int emulateCpu8080Op(Cpu8080* cpu, const uint8_t* code)
 {
     pthread_mutex_lock(&cpu->emulation_mutex);
-    uint8_t* opcode;
+    struct timespec start_time;
+    clock_gettime(CLOCK_REALTIME, &start_time);
+    const uint8_t* opcode;
     if (code == NULL) opcode = &cpu->memory[cpu->pc];
     else opcode = code;
 #ifdef PRINT_OPS
@@ -1581,8 +1584,13 @@ int emulateCpu8080Op(Cpu8080* cpu, uint8_t* code)
 #ifdef PRINT_STATE
     printCpu8080State(cpu);
 #endif
+    /// Emulate at 8080 CPU clock rate
+    struct timespec end_time;
+    clock_gettime(CLOCK_REALTIME, &end_time);
+    while(end_time.tv_nsec - start_time.tv_nsec < cpu->nsec_per_cycle * cpu8080Cycles[*opcode])
+        clock_gettime(CLOCK_REALTIME, &end_time);
     pthread_mutex_unlock(&cpu->emulation_mutex);
-    return cpu8080Cyles[*opcode];
+    return cpu8080Cycles[*opcode];
 }
 
 int emulateCpu8080(Cpu8080* cpu)
