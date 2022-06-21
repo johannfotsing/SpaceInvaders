@@ -115,4 +115,6 @@ void loadCpu8080ROM(Cpu8080* cpu, const char* rom_path, uint16_t memory_offset);
  */
 void generateCpu8080Interrupt(Cpu8080* cpu, const uint8_t* interrupt_opcode);
 
+void runCpu8080(Cpu8080* cpu);
+
 #endif // CPU_8080_H

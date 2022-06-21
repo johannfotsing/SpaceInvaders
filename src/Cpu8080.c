@@ -1618,3 +1618,8 @@ void generateCpu8080Interrupt(Cpu8080* cpu, const uint8_t* interrupt_opcode)
     // It is also assumed that ISR will restore Program Counter
     // TODO: check if previous statements are TRUE.
 }
+
+void runCpu8080(Cpu8080* cpu)
+{
+    while(1) emulateCpu8080(cpu);
+}
