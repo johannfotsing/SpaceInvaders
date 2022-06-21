@@ -24,6 +24,8 @@ Cpu8080* initCpu8080(const Cpu8080Config* conf)
     c->out = (IOPort*) malloc(conf->out_ports*sizeof(IOPort));
     // Allocate callbacks array
     c->io_callbacks = (output_callback_t*) malloc(conf->out_ports*sizeof(output_callback_t));
+    // Enable interrupts
+    c->interrupt_enabled = 1;
 }
 
 void freeCpu8080(Cpu8080* cpu)
@@ -538,7 +540,6 @@ uint8_t cpu8080Cycles[] =
 
 int emulateCpu8080Op(Cpu8080* cpu, const uint8_t* code)
 {
-    pthread_mutex_lock(&cpu->emulation_mutex);
     struct timespec start_time;
     clock_gettime(CLOCK_REALTIME, &start_time);
     const uint8_t* opcode;
@@ -858,7 +859,6 @@ int emulateCpu8080Op(Cpu8080* cpu, const uint8_t* code)
     case 0x74 : writeCpu8080MemoryAtHL(cpu, cpu->h); cpu->pc += 1; break;			// MOV M,H
     case 0x75 : writeCpu8080MemoryAtHL(cpu, cpu->l); cpu->pc += 1; break;			// MOV M,L
     case 0x76 : cpu->pc += 1; cpu->stopped = 1; cpu->interrupt_enabled=1; break;		// HLT
-
     case 0x77 : writeCpu8080MemoryAtHL(cpu, cpu->a); cpu->pc += 1; break;			// MOV M,A
     case 0x78 : cpu->a = cpu->b; cpu->pc += 1; break;				// MOV A,B
     case 0x79 : cpu->a = cpu->c; cpu->pc += 1; break;				// MOV A,C
@@ -1589,21 +1589,32 @@ int emulateCpu8080Op(Cpu8080* cpu, const uint8_t* code)
     clock_gettime(CLOCK_REALTIME, &end_time);
     while(end_time.tv_nsec - start_time.tv_nsec < cpu->nsec_per_cycle * cpu8080Cycles[*opcode])
         clock_gettime(CLOCK_REALTIME, &end_time);
-    pthread_mutex_unlock(&cpu->emulation_mutex);
     return cpu8080Cycles[*opcode];
 }
 
 int emulateCpu8080(Cpu8080* cpu)
 {
-    return emulateCpu8080Op(cpu, NULL);
+    pthread_mutex_lock(&cpu->emulation_mutex);
+    int n_cycles = emulateCpu8080Op(cpu, NULL);
+    pthread_mutex_unlock(&cpu->emulation_mutex);
+    return n_cycles;
 }
 
 void generateCpu8080Interrupt(Cpu8080* cpu, const uint8_t* interrupt_opcode)
 {
     if (!cpu->interrupt_enabled) return;
-    if (disassembleCpu8080Op(cpu, interrupt_opcode) == 0) exit(1);
+    int op_bytes = disassembleCpu8080Op(cpu, interrupt_opcode);
+    if (op_bytes == 0) exit(1);
     cpu->interrupt_enabled = 0;
-    emulateCpu8080Op(cpu, interrupt_opcode);
-    // It is assumed that the interrupt service routine will enable interrupts at the end of its execution
-    // TODO: check if previous statement is TRUE.
+    pthread_mutex_lock(&cpu->emulation_mutex);
+    while (op_bytes > 0)
+    {
+        emulateCpu8080Op(cpu, interrupt_opcode);
+        interrupt_opcode += op_bytes;
+        op_bytes = disassembleCpu8080Op(cpu, interrupt_opcode);
+    }
+    pthread_mutex_unlock(&cpu->emulation_mutex);
+    // It is assumed that the interrupt service routine will re-enable interrupts at the end of its execution
+    // It is also assumed that ISR will restore Program Counter
+    // TODO: check if previous statements are TRUE.
 }
