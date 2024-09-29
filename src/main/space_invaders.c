@@ -1,5 +1,5 @@
 /**
- * @file SpaceInvaders.c
+ * @file space_invaders.c
  * @author Johann Fotsing (johann.fotsing@outlook.com)
  * @brief Here is implemented the main loop of the SpaceInvaders game emulation.
  * @version 0.1
@@ -15,7 +15,7 @@
 #define MONITOR_HEIGHT  256
 
 #include <SDL2/SDL.h>
-#include "SpaceInvadersArcade.h"
+#include "../include/arcade.h"
 
 int main(int argc, char** argv)
 {
@@ -24,8 +24,10 @@ int main(int argc, char** argv)
     SDL_Window* w = SDL_CreateWindow("Space Invaders", 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
     SDL_Renderer* rd = SDL_CreateRenderer(w, -1, SDL_RENDERER_ACCELERATED);
     SDL_Texture* tx = SDL_CreateTexture(rd, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, MONITOR_WIDTH, MONITOR_HEIGHT);
-    // Init SpaceInvadersArcade
-    SpaceInvadersArcade* arc = initArcade((ArcadeDisplay) {w, rd, tx}, "rom/");
+    // Init Arcade
+    Arcade* arc = arcade_init(w, rd, tx, "invaders");
+    // Start SpaceInvaders Arcade
+    arcade_start(arc);
     // Event loop
     SDL_Event event;
     SDL_bool quit = SDL_FALSE;
@@ -39,17 +41,17 @@ int main(int argc, char** argv)
             {
                 switch(event.key.keysym.scancode)
                 {
-                case SDL_SCANCODE_C: onCoinPressed(arc);
+                case SDL_SCANCODE_C: on_coin_pressed(arc);
                 // P1
-                case SDL_SCANCODE_UP: onP1ShootPressed(arc); break;
-                case SDL_SCANCODE_DOWN: onP1StartPressed(arc); break;
-                case SDL_SCANCODE_LEFT: onP1LeftPressed(arc); break;
-                case SDL_SCANCODE_RIGHT: onP1RightPressed(arc); break;
+                case SDL_SCANCODE_UP: on_P1_shoot_pressed(arc); break;
+                case SDL_SCANCODE_DOWN: on_P1_start_pressed(arc); break;
+                case SDL_SCANCODE_LEFT: on_P1_left_pressed(arc); break;
+                case SDL_SCANCODE_RIGHT: on_P1_right_pressed(arc); break;
                 // P2
-                case SDL_SCANCODE_Z: onP2ShootPressed(arc); break;
-                case SDL_SCANCODE_S: onP2StartPressed(arc); break;
-                case SDL_SCANCODE_Q: onP2LeftPressed(arc); break;
-                case SDL_SCANCODE_D: onP2RightPressed(arc); break;
+                case SDL_SCANCODE_Z: on_P2_shoot_pressed(arc); break;
+                case SDL_SCANCODE_S: on_P2_start_pressed(arc); break;
+                case SDL_SCANCODE_Q: on_P2_left_pressed(arc); break;
+                case SDL_SCANCODE_D: on_P2_right_pressed(arc); break;
                 // QUIT
                 case SDL_SCANCODE_ESCAPE: quit = SDL_TRUE; break;
                 default: break;
@@ -59,17 +61,17 @@ int main(int argc, char** argv)
             {
                 switch(event.key.keysym.scancode)
                 {
-                case SDL_SCANCODE_C: onCoinReleased(arc);
+                case SDL_SCANCODE_C: on_coin_released(arc);
                 // P1
-                case SDL_SCANCODE_UP: onP1ShootReleased(arc); break;
-                case SDL_SCANCODE_DOWN: onP1StartReleased(arc); break;
-                case SDL_SCANCODE_LEFT: onP1LeftReleased(arc); break;
-                case SDL_SCANCODE_RIGHT: onP1RightReleased(arc); break;
+                case SDL_SCANCODE_UP: on_P1_shoot_released(arc); break;
+                case SDL_SCANCODE_DOWN: on_P1_start_released(arc); break;
+                case SDL_SCANCODE_LEFT: on_P1_left_released(arc); break;
+                case SDL_SCANCODE_RIGHT: on_P1_right_released(arc); break;
                 // P2
-                case SDL_SCANCODE_Z: onP2ShootReleased(arc); break;
-                case SDL_SCANCODE_S: onP2StartReleased(arc); break;
-                case SDL_SCANCODE_Q: onP2LeftReleased(arc); break;
-                case SDL_SCANCODE_D: onP2RightReleased(arc); break;
+                case SDL_SCANCODE_Z: on_P2_shoot_released(arc); break;
+                case SDL_SCANCODE_S: on_P2_start_released(arc); break;
+                case SDL_SCANCODE_Q: on_P2_start_released(arc); break;
+                case SDL_SCANCODE_D: on_P2_right_released(arc); break;
                 // QUIT
                 case SDL_SCANCODE_ESCAPE: quit = SDL_TRUE; break;
                 default: break;

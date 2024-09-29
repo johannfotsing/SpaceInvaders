@@ -1,14 +1,23 @@
-CC = gcc -g
-DIAGFLAGS = -DFOR_CPUDIAG -DPRINT_OPS -DPRINT_STATE
-SDLFLAGS = -lSDL2 -lSDL2_image -lSDL2_ttf
-BIN_DIR = ./bin
-SRC_DIR = ./src
+CC = gcc
+DIAG_FLAGS = -DFOR_CPUDIAG -DPRINT_OPS -DPRINT_STATE
+LD_FLAGS = -lSDL2 -lrt -lpthread
+BIN_DIR = bin
+SRC_DIR = src
+INCLUDE_DIR = include
+CPU8080_SRCS = $(SRC_DIR)/main/cpu_8080/*.c
+ARCADE_SRCS = $(SRC_DIR)/main/arcade/*.c
 
 init:
 	mkdir -p $(BIN_DIR)
 
-cpu8080diag: init
-	$(CC) $(DIAGFLAGS) $(SRC_DIR)/Cpu8080.c $(SRC_DIR)/Cpu8080Diag.c -o $(BIN_DIR)/diag
+diagnostic: init
+	$(CC) $(DIAG_FLAGS) $(SRC_DIR)/main/diagnostic.c $(CPU8080_SRCS) -o $(BIN_DIR)/diag
 
 spaceinvaders: init
-	$(CC) $(SRC_DIR)/Cpu8080.c $(SRC_DIR)/SpaceInvadersArcade.c $(SRC_DIR)/SpaceInvaders.c -o $(BIN_DIR)/spaceinvaders $(SDLFLAGS)
+	$(CC) -DFOR_SPACE_INVADERS $(SRC_DIR)/main/space_invaders.c $(CPU8080_SRCS) $(ARCADE_SRCS) -o $(BIN_DIR)/spaceinvaders $(LD_FLAGS)
+
+spaceinvadersd: init
+	$(CC) -g -DPRINT_OPS -DFOR_SPACE_INVADERS $(SRC_DIR)/main/space_invaders.c $(CPU8080_SRCS) $(ARCADE_SRCS) -o $(BIN_DIR)/spaceinvaders $(LD_FLAGS)
+
+clean:
+	rm -r bin

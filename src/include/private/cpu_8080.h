@@ -1,10 +1,10 @@
 #ifndef CPU_8080_PRIVATE_H
 #define CPU_8080_PRIVATE_H
 
-#include "Cpu8080.h"
+#include "cpu_8080.h"
 #include <pthread.h>
 
-/// This structure describes the status register of a 8080 processor.
+/// This structure describes the status register of a 8080 processor (ALU ?).
 typedef struct _8080Status
 {
     uint8_t s: 1;
@@ -48,9 +48,9 @@ struct _8080
     
     /// Index Registers
     // Program counter
-    uint16_t pc;
+    uint16_t program_counter;
     // Stack pointer
-    uint16_t sp;
+    uint16_t stack_pointer;
     
     /// Status Register
     Status flags;
@@ -73,12 +73,25 @@ struct _8080
     double nsec_per_cycle;
 
     // A mutex to handle emulation from main thread and interrupt threads
+    // TODO: remove this from here !
     pthread_mutex_t emulation_mutex;
 };
 
-int emulateCpu8080Op(Cpu8080* cpu, const uint8_t* code);
+/**
+ * @brief
+ *      
+ * @param cpu       pointer to a 8080 cpu object
+ * @param code      bytecode to emulate
+ */
+int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code);
 
-int disassembleCpu8080Op(Cpu8080* cpu, const uint8_t* code);
+/**
+ * @brief
+ *      
+ * @param cpu       pointer to a 8080 cpu object
+ * @param code      bytecode to disassemble
+ */
+int cpu8080_disassemble_op(Cpu8080* cpu, const uint8_t* code);
 
 /**
  * @brief
@@ -86,7 +99,7 @@ int disassembleCpu8080Op(Cpu8080* cpu, const uint8_t* code);
  * @param cpu       pointer to a 8080 cpu object
  * @param value     byte value to store into memory
  */
-void writeCpu8080MemoryAtHL(Cpu8080* cpu, uint8_t value);
+void cpu8080_write_HL_membyte(Cpu8080* cpu, uint8_t value);
 
 /**
  * @brief
@@ -94,7 +107,8 @@ void writeCpu8080MemoryAtHL(Cpu8080* cpu, uint8_t value);
  * @param cpu       pointer to a 8080 cpu object
  * @return uint8_t  byte read from memory
  */
-uint8_t readCpu8080MemoryAtHL(Cpu8080* cpu);
+// TODO: pass register value into a reference parameter
+uint8_t cpu8080_read_HL_membyte(Cpu8080* cpu);
 
 /**
  * @brief 
@@ -102,30 +116,36 @@ uint8_t readCpu8080MemoryAtHL(Cpu8080* cpu);
  * @param cpu       pointer to a 8080 CPU object
  * @param r         result from last ALU operation
  */
-void updateCpu8080Flags(Cpu8080* cpu, uint16_t r);
+void cpu8080_update_flags(Cpu8080* cpu, uint16_t r);
 
 /**
  * @brief 
  *      This function prints CPU registers and flags
  * @param cpu   pointer to 8080 CPU object
  */
-void printCpu8080State(Cpu8080* cpu);
+void cpu8080_print_state(Cpu8080* cpu);
+
 
 /** Helper functions for arithmetic operations **/
 /************************************************/
+/************************************************/
+/************************************************/
+/************************************************/
 
-void updateCpu8080Flags(Cpu8080* cpu, uint16_t r);
 
-uint8_t cpu8080Add(Cpu8080* cpu, uint8_t a, uint8_t b);
+void cpu8080_update_flags(Cpu8080* cpu, uint16_t r);
 
-uint8_t cpu8080AddWithCarry(Cpu8080* cpu, uint8_t a, uint8_t b);
+uint8_t cpu8080_ALU_add(Cpu8080* cpu, uint8_t a, uint8_t b);
 
-uint8_t twoComplement(uint8_t a);
+uint8_t cpu8080_ALU_add_with_carry(Cpu8080* cpu, uint8_t a, uint8_t b);
 
-uint8_t cpu8080Sub(Cpu8080* cpu, uint8_t a, uint8_t b);
+uint8_t cpu8080_ALU_twos_complement(uint8_t a);
 
-uint8_t cpu8080SubWithBorrow(Cpu8080* cpu, uint8_t a, uint8_t b);
+uint8_t cpu8080_ALU_substract(Cpu8080* cpu, uint8_t a, uint8_t b);
 
+uint8_t cpu8080_ALU_substract_with_borrow(Cpu8080* cpu, uint8_t a, uint8_t b);
+
+// TODO: find out what that operation does and implement
 void cpu8080DAA(Cpu8080* cpu);
 
 #endif // CPU_8080_PRIVATE_H

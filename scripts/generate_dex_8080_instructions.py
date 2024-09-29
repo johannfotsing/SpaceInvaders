@@ -1,53 +1,59 @@
 import re
-from _8080 import REGISTER_PAIRS
+from _8080 import REGISTER_PAIR_MAP
 
-mov_instruction_parser = re.compile('MOV (?P<to_register>[A-EHLM]),[ ]*(?P<from_register>[A-EHLM]).*', re.A)
+CPU8080_MOV_PARSER = re.compile('MOV (?P<dst_register>[A-EHLM]),[ ]*(?P<src_register>[A-EHLM]).*', re.A)
+
+
 def generate_mov_code(op_label, syntax, num_bytes):
     """
-    MOV instrutions are used to move bytes between CPU registers and memory boxes. 
+    MOV instrutions are used to move bytes between CPU registers and memory locations.
     Syntax: MOV {DST_REG},{SRC_REG} | MOV M,{SRC_REG} | MOV {DST_REG},M
     M in the syntax refers to a memory location which address is given by HL register pair.
     """
-    # Identify source and destination
-    res = mov_instruction_parser.match(syntax)
-    to_reg = res.group('to_register').lower()
-    from_reg = res.group('from_register').lower()
+    # Identify source and destination registers
+    res = CPU8080_MOV_PARSER.match(syntax)
+    dst_register = res.group('dst_register').lower()
+    src_register = res.group('src_register').lower()
     
     # Instruction for actual registers, not memory addresses 
-    if (to_reg != 'M'.lower() and from_reg != 'M'.lower()):
-        c_instruction = "case {}: cpu->{} = cpu->{}; cpu->pc += {}; break;\t\t\t\t// {}".format(op_label, to_reg, from_reg, num_bytes, syntax)
+    if (dst_register != 'M'.lower() and src_register != 'M'.lower()):
+        c_instruction = "case {}: cpu->{} = cpu->{}; cpu->program_counter += {}; break;\t\t\t\t// {}".format(op_label, dst_register, src_register, num_bytes, syntax)
         return c_instruction
     # Destination register is actually a memory address
-    elif (to_reg == 'M'.lower()):
-        assert(from_reg != 'M'.lower()) # MOV M,M does not exist
-        c_instruction = "case {}: writeCpu8080MemoryAtHL(cpu, cpu->{}); cpu->pc += {}; break;\t\t\t// {}".format(op_label, from_reg, num_bytes, syntax)
+    elif (dst_register == 'M'.lower()):
+        assert(src_register != 'M'.lower()) # MOV M,M does not exist
+        c_instruction = "case {}: cpu8080_write_HL_membyte(cpu, cpu->{}); cpu->program_counter += {}; break;\t\t\t// {}".format(op_label, src_register, num_bytes, syntax)
         return c_instruction
     # Source register is actually a memory address
-    elif (from_reg == 'M'.lower()):
-        assert(to_reg != 'M'.lower())   # MOV M,M does not exist
-        c_instruction = "case {}: cpu->{} = readCpu8080MemoryAtHL(cpu); cpu->pc += {}; break;\t\t\t// {}".format(op_label, to_reg, num_bytes, syntax)
+    elif (src_register == 'M'.lower()):
+        assert(dst_register != 'M'.lower())   # MOV M,M does not exist
+        c_instruction = "case {}: cpu->{} = cpu8080_read_HL_membyte(cpu); cpu->program_counter += {}; break;\t\t\t// {}".format(op_label, dst_register, num_bytes, syntax)
         return c_instruction
     # Error:
     else:
         assert(False)
 
-mvi_instruction_parser = re.compile('MVI (?P<to_register>[A-EHLM]),[ ]*D8.*')
+
+CPU8080_MVI_PARSER = re.compile('MVI (?P<dst_register>[A-EHLM]),[ ]*D8.*')
+
+
 def generate_mvi_code(op_label, syntax, num_bytes):
     """
-    MVI instructions are used to move immediate values of bytes into a register or memory.
-    Syntax: MVI {DST_REG}, 0xXX | MVI M,0xXX
+    MVI instructions are used to move immediate values of bytes into a register or into a memory location.
+    Syntax: MVI {DST_REG}, 0xXX | MVI M, 0xXX
     """
     # Find source register
-    to_register = mvi_instruction_parser.match(syntax).group('to_register').lower()
+    dst_register = CPU8080_MVI_PARSER.match(syntax).group('dst_register').lower()
 
     # Actual register
-    if to_register != 'M'.lower():
-        c_instruction = "case {}: cpu->{} = opcode[1]; cpu->pc += {}; break;\t\t\t\t// {}".format(op_label, to_register, num_bytes, syntax)
+    if dst_register != 'M'.lower():
+        c_instruction = "case {}: cpu->{} = opcode[1]; cpu->program_counter += {}; break;\t\t\t\t// {}".format(op_label, dst_register, num_bytes, syntax)
         return c_instruction
     # Memory cell pointed to by HL registers pair
     else:
-        c_instruction = "case {}: writeCpu8080MemoryAtHL(cpu, opcode[1]); cpu->pc += {}; break;\t\t// {}".format(op_label, num_bytes, syntax)
+        c_instruction = "case {}: cpu8080_write_HL_membyte(cpu, opcode[1]); cpu->program_counter += {}; break;\t\t// {}".format(op_label, num_bytes, syntax)
         return c_instruction
+
 
 def generate_lxi_code(op_label, syntax, num_bytes):
     """
@@ -60,55 +66,59 @@ def generate_lxi_code(op_label, syntax, num_bytes):
         "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
         + "{\n"\
         + "\tuint16_t h = opcode[2]; uint16_t l = opcode[1];\n"\
-        + "\tcpu->sp = h << 8 | l;\n"\
-        + "\tcpu->pc += {};\n".format(num_bytes)\
+        + "\tcpu->stack_pointer = h << 8 | l;\n"\
+        + "\tcpu->program_counter += {};\n".format(num_bytes)\
         + "\tbreak;\n"\
         + "}"
         return c_instruction
     else:
-        register_low = REGISTER_PAIRS[register_high.upper()].lower()
-        return "case {}: cpu->{} = opcode[2]; cpu->{} = opcode[1]; cpu->pc += {}; break;\t\t// {}".format(op_label, register_high, register_low, num_bytes, syntax)
+        register_low = REGISTER_PAIR_MAP[register_high.upper()].lower()
+        return "case {}: cpu->{} = opcode[2]; cpu->{} = opcode[1]; cpu->program_counter += {}; break;\t\t// {}".format(op_label, register_high, register_low, num_bytes, syntax)
+
 
 def generate_ldax_code(op_label, syntax, num_bytes):
     """
     LDAX instructions load memory cell bytes into the accumulator register.
     """
-    register_high = re.match('LDAX (?P<reg>[BD]).*', syntax).group('reg').lower()
-    register_low = REGISTER_PAIRS[register_high.upper()].lower()
+    register_high = re.match('LDAX (?P<register>[BD]).*', syntax).group('register').lower()
+    register_low = REGISTER_PAIR_MAP[register_high.upper()].lower()
     c_instruction = \
     "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
     + "{\n"\
-    + "\tcpu->a = readCpu8080Memory(cpu, ((uint16_t)cpu->{}) << 8 | ((uint16_t) cpu->{}));\n".format(register_high, register_low)\
-    + "\tcpu->pc += {};\n".format(num_bytes)\
+    + "\tcpu->a = cpu8080_read_membyte(cpu, ((uint16_t)cpu->{}) << 8 | ((uint16_t) cpu->{}));\n".format(register_high, register_low)\
+    + "\tcpu->program_counter += {};\n".format(num_bytes)\
     + "\tbreak;\n"\
     + "}"
     return c_instruction
+
 
 def generate_lda_code(op_label, syntax, num_bytes):
     """
-    LDA instruction loads a byte into accumulator. The byte is read from memory at address given by immediate value.
+    LDA instruction loads a memory byte into the accumulator byte register. The memory byte's address is given as immediate value.
     """
     return "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
          + "{\n"\
-         + "\tcpu->a = readCpu8080Memory(cpu, ((uint16_t) opcode[2]) << 8 | ((uint16_t) opcode[1]));\n"\
-         + "\tcpu->pc += {};\n".format(num_bytes)\
+         + "\tcpu->a = cpu8080_read_membyte(cpu, ((uint16_t) opcode[2]) << 8 | ((uint16_t) opcode[1]));\n"\
+         + "\tcpu->program_counter += {};\n".format(num_bytes)\
          + "\tbreak;\n"\
          + "}"
 
+
 def generate_stax_code(op_label, syntax, num_bytes):
     """
-    STAX instructions load accumulator's byte into memory cell.
+    STAX instruction loads accumulator's byte into memory cell which address is provided by a word register.
     """
     register_high = re.match('STAX (?P<reg>[BD]).*', syntax).group('reg').lower()
-    register_low = REGISTER_PAIRS[register_high.upper()].lower()
+    register_low = REGISTER_PAIR_MAP[register_high.upper()].lower()
     c_instruction = \
     "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
     + "{\n"\
-    + "\twriteCpu8080Memory(cpu, ((uint16_t)cpu->{}) << 8 | ((uint16_t) cpu->{}), cpu->a);\n".format(register_high, register_low)\
-    + "\tcpu->pc += {};\n".format(num_bytes)\
+    + "\tcpu8080_write_membyte(cpu, ((uint16_t)cpu->{}) << 8 | ((uint16_t) cpu->{}), cpu->a);\n".format(register_high, register_low)\
+    + "\tcpu->program_counter += {};\n".format(num_bytes)\
     + "\tbreak;\n"\
     + "}"
     return c_instruction
+
 
 def generate_sta_code(op_label, syntax, num_bytes):
     """
@@ -116,10 +126,11 @@ def generate_sta_code(op_label, syntax, num_bytes):
     """
     return "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
          + "{\n"\
-         + "\twriteCpu8080Memory(cpu, ((uint16_t) opcode[2]) << 8 | ((uint16_t) opcode[1]), cpu->a);\n"\
-         + "\tcpu->pc += {};\n".format(num_bytes)\
+         + "\tcpu8080_write_membyte(cpu, ((uint16_t) opcode[2]) << 8 | ((uint16_t) opcode[1]), cpu->a);\n"\
+         + "\tcpu->program_counter += {};\n".format(num_bytes)\
          + "\tbreak;\n"\
          + "}"
+
 
 """
 STACK instructions
@@ -135,20 +146,21 @@ def generate_push_code(op_label, syntax, num_bytes):
     if register_high == 'PSW'.lower():
         return "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
              + "{\n"\
-             + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, cpu->a);\n"\
-             + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, *((uint8_t*) &cpu->flags));\n"\
-             + "\tcpu->pc += {};\n".format(num_bytes)\
+             + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->a);\n"\
+             + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, *((uint8_t*) &cpu->flags));\n"\
+             + "\tcpu->program_counter += {};\n".format(num_bytes)\
              + "\tbreak;\n"\
              + "}"
     else:
-        register_low = REGISTER_PAIRS[register_high.upper()].lower()
+        register_low = REGISTER_PAIR_MAP[register_high.upper()].lower()
         return "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
              + "{\n"\
-             + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, cpu->{});\n".format(register_high)\
-             + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, cpu->{});\n".format(register_low)\
-             + "\tcpu->pc += {};\n".format(num_bytes)\
+             + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->{});\n".format(register_high)\
+             + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->{});\n".format(register_low)\
+             + "\tcpu->program_counter += {};\n".format(num_bytes)\
              + "\tbreak;\n"\
              + "}"
+
 
 def generate_pop_code(op_label, syntax, num_bytes):
     """
@@ -159,37 +171,41 @@ def generate_pop_code(op_label, syntax, num_bytes):
     if register_high == 'PSW'.lower():
         return "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
              + "{\n"\
-             + "\t*((uint8_t*) &cpu->flags) = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-             + "\tcpu->a = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-             + "\tcpu->pc += {};\n".format(num_bytes)\
+             + "\t*((uint8_t*) &cpu->flags) = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+             + "\tcpu->a = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+             + "\tcpu->program_counter += {};\n".format(num_bytes)\
              + "\tbreak;\n"\
              + "}"
     else:
-        register_low = REGISTER_PAIRS[register_high.upper()].lower()
+        register_low = REGISTER_PAIR_MAP[register_high.upper()].lower()
         return "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
              + "{\n"\
-             + "\tcpu->{} = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n".format(register_low)\
-             + "\tcpu->{} = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n".format(register_high)\
-             + "\tcpu->pc += {};\n".format(num_bytes)\
+             + "\tcpu->{} = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n".format(register_low)\
+             + "\tcpu->{} = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n".format(register_high)\
+             + "\tcpu->program_counter += {};\n".format(num_bytes)\
              + "\tbreak;\n"\
              + "}"
+
 
 """
 IO instrucions
 ===============
 """
 
+
 def generate_in_code(op_label, syntax, num_bytes):
     """
     IN instruction loads an IO port byte into the accumulator.
     """
-    return "case {}: cpu->a = cpu->in[opcode[1]].data; cpu->pc += {}; break;\t\t// {}".format(op_label, num_bytes, syntax)
+    return "case {}: cpu->a = cpu->in[opcode[1]].data; cpu->program_counter += {}; break;\t\t// {}".format(op_label, num_bytes, syntax)
+
 
 def generate_out_code(op_label, syntax, num_bytes):
     """
     OUT instruction writes the accumulator's value to an IO port.
     """
-    return "case {}: cpu->out[opcode[1]].data = cpu->a; (*cpu->io_callbacks[opcode[1]])(cpu); cpu->pc += {}; break;\t\t// {}".format(op_label, num_bytes, syntax)
+    return "case {}: cpu->out[opcode[1]].data = cpu->a; (*cpu->io_callbacks[opcode[1]])(cpu); cpu->program_counter += {}; break;\t\t// {}".format(op_label, num_bytes, syntax)
+
 
 """
 Others
@@ -204,12 +220,13 @@ def generate_shld_code(op_label, syntax, num_bytes):
                   + "{\n"\
                   + "\tuint16_t mem_offset = opcode[2];\n"\
                   + "\tmem_offset = (mem_offset << 8) | opcode[1];\n"\
-                  + "\twriteCpu8080Memory(cpu, mem_offset, cpu->l);\n"\
-                  + "\twriteCpu8080Memory(cpu, mem_offset + 1, cpu->h);\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu8080_write_membyte(cpu, mem_offset, cpu->l);\n"\
+                  + "\tcpu8080_write_membyte(cpu, mem_offset + 1, cpu->h);\n"\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
+
 
 def generate_lhld_code(op_label, syntax, num_bytes):
     """
@@ -219,12 +236,13 @@ def generate_lhld_code(op_label, syntax, num_bytes):
                   + "{\n"\
                   + "\tuint16_t mem_offset = opcode[2];\n"\
                   + "\tmem_offset = (mem_offset << 8) | opcode[1];\n"\
-                  + "\tcpu->l = readCpu8080Memory(cpu, mem_offset);\n"\
-                  + "\tcpu->h = readCpu8080Memory(cpu, mem_offset+1);\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->l = cpu8080_read_membyte(cpu, mem_offset);\n"\
+                  + "\tcpu->h = cpu8080_read_membyte(cpu, mem_offset+1);\n"\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
+
 
 def generate_xthl_code(op_label, syntax, num_bytes):
     """
@@ -233,14 +251,15 @@ def generate_xthl_code(op_label, syntax, num_bytes):
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
                   + "\tuint8_t l = cpu->l, h = cpu->h;\n"\
-                  + "\tcpu->l = readCpu8080Memory(cpu, cpu->sp);\n"\
-                  + "\tcpu->h = readCpu8080Memory(cpu, cpu->sp+1);\n"\
-                  + "\twriteCpu8080Memory(cpu, cpu->sp, l);\n"\
-                  + "\twriteCpu8080Memory(cpu, cpu->sp + 1, h);\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->l = cpu8080_read_membyte(cpu, cpu->stack_pointer);\n"\
+                  + "\tcpu->h = cpu8080_read_membyte(cpu, cpu->stack_pointer+1);\n"\
+                  + "\tcpu8080_write_membyte(cpu, cpu->stack_pointer, l);\n"\
+                  + "\tcpu8080_write_membyte(cpu, cpu->stack_pointer + 1, h);\n"\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
+
 
 def generate_pchl_code(op_label, syntax, num_bytes):
     """
@@ -248,11 +267,12 @@ def generate_pchl_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc = cpu->h;\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | cpu->l;\n"\
+                  + "\tcpu->program_counter = cpu->h;\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | cpu->l;\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
+
 
 def generate_xchg_code(op_label, syntax, num_bytes):
     """
@@ -263,10 +283,11 @@ def generate_xchg_code(op_label, syntax, num_bytes):
                   + "\tuint8_t l = cpu->l, h = cpu->h;\n"\
                   + "\tcpu->l = cpu->e; cpu->e = l;\n"\
                   + "\tcpu->h = cpu->d; cpu->d = h;\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
+
 
 def generate_sphl_code(op_label, syntax, num_bytes):
     """
@@ -274,9 +295,9 @@ def generate_sphl_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->sp = cpu->h;\n"\
-                  + "\tcpu->sp = (cpu->sp << 8) | cpu->l;\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->stack_pointer = cpu->h;\n"\
+                  + "\tcpu->stack_pointer = (cpu->stack_pointer << 8) | cpu->l;\n"\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction

@@ -11,9 +11,9 @@ def generate_ret_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tuint16_t pcl = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tuint16_t pch = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tcpu->pc = (pch << 8) | pcl;\n"\
+                  + "\tuint16_t pcl = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tuint16_t pch = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tcpu->program_counter = (pch << 8) | pcl;\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -24,11 +24,11 @@ def generate_rz_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (!cpu->flags.z) break;"\
-                  + "\tuint16_t pcl = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tuint16_t pch = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tcpu->pc = (pch << 8) | pcl;\n"\
+                  + "\tuint16_t pcl = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tuint16_t pch = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tcpu->program_counter = (pch << 8) | pcl;\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -39,11 +39,11 @@ def generate_rnz_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (cpu->flags.z) break;"\
-                  + "\tuint16_t pcl = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tuint16_t pch = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tcpu->pc = (pch << 8) | pcl;\n"\
+                  + "\tuint16_t pcl = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tuint16_t pch = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tcpu->program_counter = (pch << 8) | pcl;\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -54,11 +54,11 @@ def generate_rc_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (!cpu->flags.c) break;"\
-                  + "\tuint16_t pcl = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tuint16_t pch = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tcpu->pc = (pch << 8) | pcl;\n"\
+                  + "\tuint16_t pcl = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tuint16_t pch = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tcpu->program_counter = (pch << 8) | pcl;\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -69,11 +69,11 @@ def generate_rnc_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (cpu->flags.c) break;"\
-                  + "\tuint16_t pcl = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tuint16_t pch = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tcpu->pc = (pch << 8) | pcl;\n"\
+                  + "\tuint16_t pcl = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tuint16_t pch = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tcpu->program_counter = (pch << 8) | pcl;\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -84,11 +84,11 @@ def generate_rpe_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (!cpu->flags.p) break;"\
-                  + "\tuint16_t pcl = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tuint16_t pch = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tcpu->pc = (pch << 8) | pcl;\n"\
+                  + "\tuint16_t pcl = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tuint16_t pch = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tcpu->program_counter = (pch << 8) | pcl;\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -99,11 +99,11 @@ def generate_rpo_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (cpu->flags.p) break;"\
-                  + "\tuint16_t pcl = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tuint16_t pch = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tcpu->pc = (pch << 8) | pcl;\n"\
+                  + "\tuint16_t pcl = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tuint16_t pch = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tcpu->program_counter = (pch << 8) | pcl;\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -114,11 +114,11 @@ def generate_rp_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (cpu->flags.s) break;"\
-                  + "\tuint16_t pcl = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tuint16_t pch = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tcpu->pc = (pch << 8) | pcl;\n"\
+                  + "\tuint16_t pcl = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tuint16_t pch = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tcpu->program_counter = (pch << 8) | pcl;\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -129,11 +129,11 @@ def generate_rm_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (!cpu->flags.s) break;"\
-                  + "\tuint16_t pcl = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tuint16_t pch = readCpu8080Memory(cpu, cpu->sp); cpu->sp++;\n"\
-                  + "\tcpu->pc = (pch << 8) | pcl;\n"\
+                  + "\tuint16_t pcl = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tuint16_t pch = cpu8080_read_membyte(cpu, cpu->stack_pointer); cpu->stack_pointer++;\n"\
+                  + "\tcpu->program_counter = (pch << 8) | pcl;\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -149,8 +149,8 @@ def generate_jmp_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -161,10 +161,10 @@ def generate_jz_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (!cpu->flags.z) break;\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -175,10 +175,10 @@ def generate_jnz_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (cpu->flags.z) break;\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -189,10 +189,10 @@ def generate_jc_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (!cpu->flags.c) break;\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -203,10 +203,10 @@ def generate_jnc_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (cpu->flags.c) break;\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -217,10 +217,10 @@ def generate_jpe_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (!cpu->flags.p) break;\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -231,10 +231,10 @@ def generate_jpo_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (cpu->flags.p) break;\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -245,10 +245,10 @@ def generate_jp_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (cpu->flags.s) break;\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -259,10 +259,10 @@ def generate_jm_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (!cpu->flags.s) break;\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -278,12 +278,12 @@ def generate_call_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tuint8_t pcl = cpu->pc & 0xff;\n"\
-                  + "\tuint8_t pch = (cpu->pc >> 8) & 0xff;\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pch);\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pcl);\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tuint8_t pcl = cpu->program_counter & 0xff;\n"\
+                  + "\tuint8_t pch = (cpu->program_counter >> 8) & 0xff;\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -294,14 +294,14 @@ def generate_cz_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (!cpu->flags.z) break;\n"\
-                  + "\tuint8_t pcl = cpu->pc & 0xff;\n"\
-                  + "\tuint8_t pch = (cpu->pc >> 8) & 0xff;\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pch);\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pcl);\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tuint8_t pcl = cpu->program_counter & 0xff;\n"\
+                  + "\tuint8_t pch = (cpu->program_counter >> 8) & 0xff;\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -312,14 +312,14 @@ def generate_cnz_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (cpu->flags.z) break;\n"\
-                  + "\tuint8_t pcl = cpu->pc & 0xff;\n"\
-                  + "\tuint8_t pch = (cpu->pc >> 8) & 0xff;\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pch);\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pcl);\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tuint8_t pcl = cpu->program_counter & 0xff;\n"\
+                  + "\tuint8_t pch = (cpu->program_counter >> 8) & 0xff;\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -330,14 +330,14 @@ def generate_cc_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (!cpu->flags.c) break;\n"\
-                  + "\tuint8_t pcl = cpu->pc & 0xff;\n"\
-                  + "\tuint8_t pch = (cpu->pc >> 8) & 0xff;\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pch);\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pcl);\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tuint8_t pcl = cpu->program_counter & 0xff;\n"\
+                  + "\tuint8_t pch = (cpu->program_counter >> 8) & 0xff;\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -348,14 +348,14 @@ def generate_cnc_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (cpu->flags.c) break;\n"\
-                  + "\tuint8_t pcl = cpu->pc & 0xff;\n"\
-                  + "\tuint8_t pch = (cpu->pc >> 8) & 0xff;\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pch);\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pcl);\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tuint8_t pcl = cpu->program_counter & 0xff;\n"\
+                  + "\tuint8_t pch = (cpu->program_counter >> 8) & 0xff;\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -366,14 +366,14 @@ def generate_cpe_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (!cpu->flags.p) break;\n"\
-                  + "\tuint8_t pcl = cpu->pc & 0xff;\n"\
-                  + "\tuint8_t pch = (cpu->pc >> 8) & 0xff;\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pch);\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pcl);\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tuint8_t pcl = cpu->program_counter & 0xff;\n"\
+                  + "\tuint8_t pch = (cpu->program_counter >> 8) & 0xff;\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -384,14 +384,14 @@ def generate_cpo_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (cpu->flags.p) break;\n"\
-                  + "\tuint8_t pcl = cpu->pc & 0xff;\n"\
-                  + "\tuint8_t pch = (cpu->pc >> 8) & 0xff;\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pch);\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pcl);\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tuint8_t pcl = cpu->program_counter & 0xff;\n"\
+                  + "\tuint8_t pch = (cpu->program_counter >> 8) & 0xff;\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -402,14 +402,14 @@ def generate_cp_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (cpu->flags.s) break;\n"\
-                  + "\tuint8_t pcl = cpu->pc & 0xff;\n"\
-                  + "\tuint8_t pch = (cpu->pc >> 8) & 0xff;\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pch);\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pcl);\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tuint8_t pcl = cpu->program_counter & 0xff;\n"\
+                  + "\tuint8_t pch = (cpu->program_counter >> 8) & 0xff;\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
@@ -420,17 +420,22 @@ def generate_cm_code(op_label, syntax, num_bytes):
     """
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
                   + "\tif (!cpu->flags.s) break;\n"\
-                  + "\tuint8_t pcl = cpu->pc & 0xff;\n"\
-                  + "\tuint8_t pch = (cpu->pc >> 8) & 0xff;\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pch);\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pcl);\n"\
-                  + "\tcpu->pc = opcode[2];\n"\
-                  + "\tcpu->pc = (cpu->pc << 8) | opcode[1];\n"\
+                  + "\tuint8_t pcl = cpu->program_counter & 0xff;\n"\
+                  + "\tuint8_t pch = (cpu->program_counter >> 8) & 0xff;\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);\n"\
+                  + "\tcpu->program_counter = opcode[2];\n"\
+                  + "\tcpu->program_counter = (cpu->program_counter << 8) | opcode[1];\n"\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction
+
+"""
+RESET instruction
+=================
+"""
 
 def generate_rst_code(op_label, syntax, num_bytes):
     """
@@ -439,12 +444,12 @@ def generate_rst_code(op_label, syntax, num_bytes):
     rst_num = int(re.match('RST (?P<num>[0-7]).*', syntax).group('num'))
     c_instruction = "case {}:\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
                   + "{\n"\
-                  + "\tcpu->pc += {};\n".format(num_bytes)\
-                  + "\tuint8_t pcl = cpu->pc & 0xff;\n"\
-                  + "\tuint8_t pch = (cpu->pc >> 8) & 0xff;\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pch);\n"\
-                  + "\tcpu->sp--; writeCpu8080Memory(cpu, cpu->sp, pcl);\n"\
-                  + "\tcpu->pc = {};\n".format(hex(rst_num*8))\
+                  + "\tcpu->program_counter += {};\n".format(num_bytes)\
+                  + "\tuint8_t pcl = cpu->program_counter & 0xff;\n"\
+                  + "\tuint8_t pch = (cpu->program_counter >> 8) & 0xff;\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);\n"\
+                  + "\tcpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);\n"\
+                  + "\tcpu->program_counter = {};\n".format(hex(rst_num*8))\
                   + "\tbreak;\n"\
                   + "}"
     return c_instruction

@@ -1,0 +1,39 @@
+/**
+ * @file arcade.h
+ * @author Johann Fotsing (johann.fotsing@outlook.com)
+ * @brief 
+ * @version 0.1
+ * @date 2022-06-18
+ * 
+ * @copyright Copyright (c) 2022
+ * 
+ */
+
+#ifndef SPACEINVADERS_ARCADE_PRIVATE
+#define SPACEINVADERS_ARCADE_PRIVATE
+
+#include <pthread.h>
+#include "../cpu_8080.h"
+#include "../arcade.h"
+
+struct Arcade
+{
+    Screen display;
+    Cpu8080* cpu;
+    pthread_t cpu_thread;
+    pthread_t display_thread;
+    pthread_t video_interrupt_thread;
+};
+
+/// Callback for shift register emulation
+void on_shift_data_available(Cpu8080* cpu);
+
+void emulate_space_invaders_interruption(Cpu8080* cpu, uint8_t interrupt_number);
+
+void start_video_interruption_thread(Arcade* a);
+
+void arcade_show(Arcade* a);
+
+void arcade_screen_update(Arcade* a);
+
+#endif // SPACEINVADERS_ARCADE_PRIVATE
