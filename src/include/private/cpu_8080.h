@@ -1,8 +1,8 @@
 #ifndef CPU_8080_PRIVATE_H
 #define CPU_8080_PRIVATE_H
 
-#include "cpu_8080.h"
 #include <pthread.h>
+#include "../cpu_8080.h"
 
 /// This structure describes the status register of a 8080 processor (ALU ?).
 typedef struct _8080Status
@@ -73,7 +73,7 @@ struct _8080
     double nsec_per_cycle;
 
     // A mutex to handle emulation from main thread and interrupt threads
-    // TODO: remove this from here !
+    // TODO: remove this from here !?
     pthread_mutex_t emulation_mutex;
 };
 
