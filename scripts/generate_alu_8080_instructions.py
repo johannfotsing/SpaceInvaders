@@ -40,7 +40,7 @@ def generate_adc_code(op_label, syntax, num_bytes):
         c_instruction = \
         "case {}:\t\t\t\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
         + "{\n"\
-        + "\tcpu->a = cpu8080_ALU_addWithCarry(cpu, cpu->a, cpu->{});\n".format(src_register)\
+        + "\tcpu->a = cpu8080_ALU_add_with_carry(cpu, cpu->a, cpu->{});\n".format(src_register)\
         + "\tcpu->program_counter += {};\n".format(num_bytes)\
         + "\tbreak;\n"\
         + "}"
@@ -49,7 +49,7 @@ def generate_adc_code(op_label, syntax, num_bytes):
         c_instruction = \
         "case {}:\t\t\t\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
         + "{\n\tuint16_t r = (uint16_t) cpu->a + (uint16_t)  + (uint16_t) cpu->flags.c;\n"\
-        + "\tcpu->a = cpu8080_ALU_addWithCarry(cpu, cpu->a, cpu8080_read_membyte(cpu));\n"\
+        + "\tcpu->a = cpu8080_ALU_add_with_carry(cpu, cpu->a, cpu8080_read_membyte(cpu));\n"\
         + "\tcpu->program_counter += {};\n".format(num_bytes)\
         + "\tbreak;\n"\
         + "}"
@@ -74,7 +74,7 @@ def generate_aci_code(op_label, syntax, num_bytes):
     """
     return "case {}:\t\t\t\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
         + "{\n"\
-        + "\tcpu->a = cpu8080_ALU_addWithCarry(cpu, cpu->a, opcode[1]);\n"\
+        + "\tcpu->a = cpu8080_ALU_add_with_carry(cpu, cpu->a, opcode[1]);\n"\
         + "\tcpu->program_counter += {};\n".format(num_bytes)\
         + "\tbreak;\n"\
         + "}"
@@ -118,7 +118,7 @@ def generate_sbb_code(op_label, syntax, num_bytes):
         c_instruction = \
         "case {}:\t\t\t\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
         + "{\n"\
-        + "\tcpu->a = cpu8080_ALU_substractWithBorrow(cpu, cpu->a, cpu->{});\n".format(src_register)\
+        + "\tcpu->a = cpu8080_ALU_substract_with_borrow(cpu, cpu->a, cpu->{});\n".format(src_register)\
         + "\tcpu->program_counter += {};\n".format(num_bytes)\
         + "\tbreak;\n"\
         + "}"
@@ -127,7 +127,7 @@ def generate_sbb_code(op_label, syntax, num_bytes):
         c_instruction = \
         "case {}:\t\t\t\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
         + "{\n\tuint16_t r = (uint16_t) cpu->a - (uint16_t) cpu8080_read_membyte(cpu) - (uint16_t) cpu->flags.c;\n"\
-        + "\tcpu->a = cpu8080_ALU_substractWithBorrow(cpu, cpu->a, cpu8080_read_membyte(cpu));\n"\
+        + "\tcpu->a = cpu8080_ALU_substract_with_borrow(cpu, cpu->a, cpu8080_read_membyte(cpu));\n"\
         + "\tcpu->program_counter += {};\n".format(num_bytes)\
         + "\tbreak;\n"\
         + "}"
@@ -152,7 +152,7 @@ def generate_sbi_code(op_label, syntax, num_bytes):
     """
     return "case {}:\t\t\t\t\t\t\t\t\t// {}\n".format(op_label, syntax)\
         + "{\n"\
-        + "\tcpu->a = cpu8080_ALU_substractWithBorrow(cpu, cpu->a, opcode[1]);\n"\
+        + "\tcpu->a = cpu8080_ALU_substract_with_borrow(cpu, cpu->a, opcode[1]);\n"\
         + "\tcpu->program_counter += {};\n".format(num_bytes)\
         + "\tbreak;\n"\
         + "}"

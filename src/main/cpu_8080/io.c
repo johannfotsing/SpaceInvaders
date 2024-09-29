@@ -29,9 +29,9 @@ void cpu8080_write_io(Cpu8080* cpu, int port_number, int pin_number, uint8_t val
     }
 }
 
-uint8_t cpu8080_read_io(Cpu8080* cpu, int port_number, int pin_number)
+void cpu8080_read_io(Cpu8080* cpu, int port_number, int pin_number, uint8_t* byte)
 {
-
+    *byte = cpu->out[port_number].data & (1 << port_number);
 }
 
 void cpu8080_write_port(Cpu8080* cpu, int port_number, uint8_t value)
@@ -39,9 +39,9 @@ void cpu8080_write_port(Cpu8080* cpu, int port_number, uint8_t value)
     cpu->in[port_number].data = value;
 }
 
-uint8_t cpu8080_read_port(Cpu8080* cpu, int port_number)
+void cpu8080_read_port(Cpu8080* cpu, int port_number, uint8_t* byte)
 {
-    return cpu->out[port_number].data;
+    *byte = cpu->out[port_number].data;
 }
 
 void cpu8080_register_output_callback(Cpu8080* cpu, output_callback_t cb, uint8_t port_number)

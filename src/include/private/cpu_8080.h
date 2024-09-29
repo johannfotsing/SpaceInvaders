@@ -108,7 +108,7 @@ void cpu8080_write_HL_membyte(Cpu8080* cpu, uint8_t value);
  * @return uint8_t  byte read from memory
  */
 // TODO: pass register value into a reference parameter
-uint8_t cpu8080_read_HL_membyte(Cpu8080* cpu);
+void cpu8080_read_HL_membyte(Cpu8080* cpu, uint8_t* byte);
 
 /**
  * @brief 

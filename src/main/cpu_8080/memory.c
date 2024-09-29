@@ -72,9 +72,9 @@ void cpu8080_write_membyte(Cpu8080* cpu, uint16_t adr, uint8_t value)
     cpu->memory[adr] = value;
 }
 
-uint8_t cpu8080_read_membyte(Cpu8080* cpu, uint16_t adr)
+void cpu8080_read_membyte(Cpu8080* cpu, uint16_t adr, uint8_t* byte)
 {
-    return cpu->memory[adr];
+    *byte = cpu->memory[adr];
 }
 
 void cpu8080_write_HL_membyte(Cpu8080* cpu, uint8_t value)
@@ -84,9 +84,9 @@ void cpu8080_write_HL_membyte(Cpu8080* cpu, uint8_t value)
     cpu8080_write_membyte(cpu, adr, value);
 }
 
-uint8_t cpu8080_read_HL_membyte(Cpu8080* cpu)
+void cpu8080_read_HL_membyte(Cpu8080* cpu, uint8_t* byte)
 {
     uint16_t adr = cpu->h;
     adr = adr << 8 | cpu->l;
-    return cpu8080_read_membyte(cpu, adr);
+    cpu8080_read_membyte(cpu, adr, byte);
 }

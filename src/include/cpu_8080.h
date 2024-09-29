@@ -50,10 +50,10 @@ void cpu8080_write_membyte(Cpu8080* cpu, uint16_t adr, uint8_t val);
  *      Read a byte from memory
  * @param cpu       pointer to a 8080 cpu object
  * @param adr       memory address where to read byte value from
- * @return uint8_t  byte value read at memory address 
+ * @param byte      reference to byte where value at memory address is read
  */
 // TODO: write read byte into a reference parameter
-uint8_t cpu8080_read_membyte(Cpu8080* cpu, uint16_t adr);
+void cpu8080_read_membyte(Cpu8080* cpu, uint16_t adr, uint8_t* byte);
 
 /**
  * @brief
@@ -81,9 +81,10 @@ void cpu8080_generate_interruption(Cpu8080* cpu, const uint8_t* interrupt_opcode
  * @param cpu           pointer to 8080 CPU object
  * @param port_number   output port where the bit is read
  * @param pin_number    pin number from where to read bit
+ * @param byte          reference to the byte where io value will be read
  * @return uint8_t      0 or 1
  */
-uint8_t cpu8080_read_io(Cpu8080* cpu, int port_number, int pin_number);
+void cpu8080_read_io(Cpu8080* cpu, int port_number, int pin_number, uint8_t* byte);
 
 /**
  * @brief
@@ -100,9 +101,9 @@ void cpu8080_write_io(Cpu8080* cpu, int port_number, int pin_number, uint8_t val
  *      This function is used to read a byte from an output IO port on the CPU
  * @param cpu           pointer to a 8080 CPU
  * @param port_number   port number to read the byte from
- * @return uint8_t 
+ * @param byte          reference to the byte where the cpu port will be read
  */
-uint8_t cpu8080_read_port(Cpu8080* cpu, int port_number);
+void cpu8080_read_port(Cpu8080* cpu, int port_number, uint8_t* byte);
 
 /**
  * @brief 

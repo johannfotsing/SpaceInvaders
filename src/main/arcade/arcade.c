@@ -182,13 +182,13 @@ void arcade_screen_update(Arcade* arcade)
     int pitch;
     uint8_t* texture_pixels;
     SDL_LockTexture(arcade->display.texture, NULL, (void**) &texture_pixels, &pitch);
-    for (int byteIndex = 0; byteIndex < arcade->display.height/8; ++byteIndex)
+    for (int byte_idx = 0; byte_idx < arcade->display.height/8; ++byte_idx)
     {
-        uint8_t imageByte = cpu8080_read_membyte(arcade->cpu, VIDEO_RAM_OFFSET+byteIndex);
-        for (int bitIndex=0; bitIndex<8; ++bitIndex)  // LSB first
-        //for (int bitIndex=7; bitIndex>=0; --bitIndex)
+        uint8_t image_byte;
+        cpu8080_read_membyte(arcade->cpu, VIDEO_RAM_OFFSET + byte_idx, &image_byte);
+        for (int bit_idx = 0; bit_idx < 8; ++bit_idx)  // LSB first
         {
-            int px_ram_idx = byteIndex * 8 + bitIndex;
+            int px_ram_idx = byte_idx * 8 + bit_idx;
             int i_ram = px_ram_idx / arcade->display.width;     // 0 - 223
             int j_ram = px_ram_idx % arcade->display.height;     // 0 - 255
             // Rotate 90deg left
@@ -196,8 +196,8 @@ void arcade_screen_update(Arcade* arcade)
             int i_txt = (arcade->display.height - 1) - j_ram;
             // Turn bit pixel into color pixel
             // SDL_Color* px_color = &BLACK_COLOR;
-            uint8_t pix_val = (imageByte & (1 << (bitIndex+1)))*255;
-            texture_pixels[i_txt*arcade->display.width+j_txt] = SDL_MapRGBA(arcade->display.px_format, 255 - pix_val, 255 - pix_val, 0, 255);
+            uint8_t pix_val = (image_byte & (1 << (bit_idx + 1))) * 255;
+            texture_pixels[i_txt * arcade->display.width + j_txt] = SDL_MapRGBA(arcade->display.px_format, 255 - pix_val, 255 - pix_val, 0, 255);
         }
     }
     SDL_UnlockTexture(arcade->display.texture);
