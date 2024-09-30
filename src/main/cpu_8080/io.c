@@ -48,17 +48,3 @@ void cpu8080_register_output_callback(Cpu8080* cpu, output_callback_t cb, uint8_
 {
     cpu->io_callbacks[port_number] = cb;
 }
-
-void cpu8080_generate_interruption(Cpu8080* cpu, const uint8_t* interrupt_opcode)
-{
-    if (!cpu->interrupt_enabled) return;
-    int op_bytes = cpu8080_disassemble_op(cpu, interrupt_opcode);
-    if (op_bytes == 0) exit(1);
-    cpu->interrupt_enabled = 0;
-    pthread_mutex_lock(&cpu->emulation_mutex);
-    cpu8080_emulate_op(cpu, interrupt_opcode);
-    pthread_mutex_unlock(&cpu->emulation_mutex);
-    // It is assumed that the interrupt service routine will re-enable interrupts at the end of its execution
-    // It is also assumed that ISR will restore Program Counter
-    // TODO: check if previous statements are TRUE.
-}

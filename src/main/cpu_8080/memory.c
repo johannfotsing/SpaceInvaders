@@ -15,18 +15,28 @@ Cpu8080* cpu8080_init(const Cpu8080Config* conf)
 {
     // Allocate CPU memory space
     Cpu8080* c = (Cpu8080*) calloc(1, sizeof(Cpu8080));
-    c->nsec_per_cycle = 1.e+9/conf->frequency;
+    c->clock_frequency = conf->frequency;
+    
     // Allocate memory
-    size_t mem_bytes = conf->memory_size_kb*1024*sizeof(uint8_t);
-    c->memory = (uint8_t*) malloc(mem_bytes);
+    size_t number_of_bytes = conf->memory_size_kb * 1024;
+    c->memory = (uint8_t*) malloc(number_of_bytes);
+    
     // Allocate IO ports
-    c->in = (IOPort*) malloc(conf->in_ports*sizeof(IOPort));
-    c->out = (IOPort*) malloc(conf->out_ports*sizeof(IOPort));
+    c->in = (IOPort*) malloc(conf->in_ports * sizeof(IOPort));
+    c->out = (IOPort*) malloc(conf->out_ports * sizeof(IOPort));
+    
     // Allocate callbacks array
-    c->io_callbacks = (output_callback_t*) malloc(conf->out_ports*sizeof(output_callback_t));
-    // Enable interrupts
-    c->interrupt_enabled = 1;
-    c->stack_pointer = 0x2300;
+    c->io_callbacks = (output_callback_t*) malloc(conf->out_ports * sizeof(output_callback_t));
+    for (int i = 0; i < conf->out_ports; ++i)
+    {
+        c->io_callbacks[i] = NULL;
+    }
+    
+    // CPU state and interrupt enabling
+    c->interrupt_enabled = false;
+    c->stopped = false;
+
+    return c;
 }
 
 void cpu8080_free(Cpu8080* cpu)
@@ -63,7 +73,7 @@ void cpu8080_load_rom(Cpu8080* cpu, const char* rom_path, uint16_t memory_offset
 void cpu8080_write_membyte(Cpu8080* cpu, uint16_t adr, uint8_t value)
 {
 #ifdef FOR_SPACE_INVADERS
-    if (adr < 2*1024)   // attempt to write to ROM
+    if (adr < 2 * 1024)   // attempt to write to ROM
     {
         printf("ERROR: attempt to write to ROM memory.");
         exit(1);

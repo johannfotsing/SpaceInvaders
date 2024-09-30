@@ -36,11 +36,13 @@ uint8_t cpu8080Cycles[] =
 	11, 10, 10, 4, 17, 11, 7, 11, 11, 5, 10, 4, 17, 17, 7, 11, 
 };
 
-int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
+void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles)
 {
     const uint8_t* opcode;
-    if (code == NULL) opcode = &cpu->memory[cpu->program_counter];
-    else opcode = code;
+    if (code == NULL)
+        opcode = &cpu->memory[cpu->program_counter];
+    else 
+        opcode = code;
 #ifdef PRINT_OPS
     cpu8080_disassemble_op(cpu, opcode);
 #endif
@@ -372,7 +374,7 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
     case 0x73 : cpu8080_write_HL_membyte(cpu, cpu->e); cpu->program_counter += 1; break;			// MOV M,E
     case 0x74 : cpu8080_write_HL_membyte(cpu, cpu->h); cpu->program_counter += 1; break;			// MOV M,H
     case 0x75 : cpu8080_write_HL_membyte(cpu, cpu->l); cpu->program_counter += 1; break;			// MOV M,L
-    case 0x76 : cpu->program_counter += 1; cpu->stopped = 1; cpu->interrupt_enabled=1; break;		// HLT
+    case 0x76 : cpu->program_counter += 1; cpu->stopped = false; break;		    // HLT
     case 0x77 : cpu8080_write_HL_membyte(cpu, cpu->a); cpu->program_counter += 1; break;			// MOV M,A
     case 0x78 : cpu->a = cpu->b; cpu->program_counter += 1; break;				// MOV A,B
     case 0x79 : cpu->a = cpu->c; cpu->program_counter += 1; break;				// MOV A,C
@@ -688,16 +690,20 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
         if (cpu->flags.z) break;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = opcode[2];
         cpu->program_counter = (cpu->program_counter << 8) | opcode[1];
         break;
     }
     case 0xc5 :						// PUSH B
     {
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->b);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->c);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->b);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->c);
         cpu->program_counter += 1;
         break;
     }
@@ -709,11 +715,12 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
     }
     case 0xc7 :						// RST 0
     {
-        cpu->program_counter += 1;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = 0x0;
         break;
     }
@@ -756,8 +763,10 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
         if (!cpu->flags.z) break;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = opcode[2];
         cpu->program_counter = (cpu->program_counter << 8) | opcode[1];
         break;
@@ -790,8 +799,10 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
     {
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = opcode[2];
         cpu->program_counter = (cpu->program_counter << 8) | opcode[1];
         break;
@@ -804,11 +815,12 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
     }
     case 0xcf :						// RST 1
     {
-        cpu->program_counter += 1;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = 0x8;
         break;
     }
@@ -844,8 +856,10 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
     }
     case 0xd3 :
     {
-        cpu->out[opcode[1]].data = cpu->a;
-        (*cpu->io_callbacks[opcode[1]])(cpu);
+        uint8_t port_number = opcode[1];
+        cpu->out[port_number].data = cpu->a;
+        if (cpu->io_callbacks[port_number] != NULL)
+            (*cpu->io_callbacks[port_number])(cpu);
         cpu->program_counter += 2; 
         break;		// OUT D8
     }
@@ -865,8 +879,10 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
     }
     case 0xd5 :						// PUSH D
     {
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->d);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->e);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->d);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->e);
         cpu->program_counter += 1;
         break;
     }
@@ -878,11 +894,12 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
     }
     case 0xd7 :						// RST 2
     {
-        cpu->program_counter += 1;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = 0x10;
         break;
     }
@@ -915,8 +932,10 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
         if (!cpu->flags.c) break;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = opcode[2];
         cpu->program_counter = (cpu->program_counter << 8) | opcode[1];
         break;
@@ -930,11 +949,12 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
     }
     case 0xdf :						// RST 3
     {
-        cpu->program_counter += 1;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = 0x18;
         break;
     }
@@ -984,27 +1004,32 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
         if (cpu->flags.p) break;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = opcode[2];
         cpu->program_counter = (cpu->program_counter << 8) | opcode[1];
         break;
     }
     case 0xe5 :						// PUSH H
     {
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->h);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->l);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->h);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->l);
         cpu->program_counter += 1;
         break;
     }
     case 0xe6 : cpu->a &= opcode[1]; cpu8080_update_flags(cpu, cpu->a); cpu->program_counter += 2; break;			// ANI D8
     case 0xe7 :						// RST 4
     {
-        cpu->program_counter += 1;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = 0x20;
         break;
     }
@@ -1049,8 +1074,10 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
         if (!cpu->flags.p) break;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = opcode[2];
         cpu->program_counter = (cpu->program_counter << 8) | opcode[1];
         break;
@@ -1059,11 +1086,12 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
     case 0xee : cpu->a ^= opcode[1]; cpu8080_update_flags(cpu, cpu->a); cpu->program_counter += 2; break;			// XRI D8
     case 0xef :						// RST 5
     {
-        cpu->program_counter += 1;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = 0x28;
         break;
     }
@@ -1097,7 +1125,7 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
         cpu->program_counter = (cpu->program_counter << 8) | opcode[1];
         break;
     }
-    case 0xf3 : cpu->interrupt_enabled = 0; cpu->program_counter += 1; break;				// DI
+    case 0xf3 : cpu->program_counter += 1; cpu->interrupt_enabled = false; break;				// DI
 
     case 0xf4 :						// CP adr
     {
@@ -1105,27 +1133,32 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
         if (cpu->flags.s) break;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = opcode[2];
         cpu->program_counter = (cpu->program_counter << 8) | opcode[1];
         break;
     }
     case 0xf5 :						// PUSH PSW
     {
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->a);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, *((uint8_t*) &cpu->flags));
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, cpu->a);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, *((uint8_t*) &cpu->flags));
         cpu->program_counter += 1;
         break;
     }
     case 0xf6 : cpu->a |= opcode[1]; cpu8080_update_flags(cpu, cpu->a); cpu->program_counter += 2; break;			// ORI D8
     case 0xf7 :						// RST 6
     {
-        cpu->program_counter += 1;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = 0x30;
         break;
     }
@@ -1157,7 +1190,7 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
         cpu->program_counter = (cpu->program_counter << 8) | opcode[1];
         break;
     }
-    case 0xfb : cpu->interrupt_enabled = 1; cpu->program_counter += 1; break;				// EI
+    case 0xfb : cpu->program_counter += 1; cpu->interrupt_enabled = true; break;				// EI
 
     case 0xfc :						// CM adr
     {
@@ -1165,8 +1198,10 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
         if (!cpu->flags.s) break;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = opcode[2];
         cpu->program_counter = (cpu->program_counter << 8) | opcode[1];
         break;
@@ -1175,11 +1210,12 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
     case 0xfe : cpu->flags.c = cpu->a < opcode[1]; cpu->flags.z = cpu->a == opcode[1]; cpu->program_counter += 2; break;	// CPI D8
     case 0xff :						// RST 7
     {
-        cpu->program_counter += 1;
         uint8_t pcl = cpu->program_counter & 0xff;
         uint8_t pch = (cpu->program_counter >> 8) & 0xff;
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
-        cpu->stack_pointer--; cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pch);
+        cpu->stack_pointer--;
+        cpu8080_write_membyte(cpu, cpu->stack_pointer, pcl);
         cpu->program_counter = 0x38;
         break;
     }
@@ -1189,15 +1225,35 @@ int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code)
 #ifdef PRINT_STATE
     cpu8080_print_state(cpu);
 #endif
-    return cpu8080Cycles[*opcode];
+    *nb_cycles = cpu8080Cycles[*opcode];
 }
 
-int cpu8080_emulate(Cpu8080* cpu)
+void cpu8080_emulate(Cpu8080* cpu, int* nb_cycles)
 {
     pthread_mutex_lock(&cpu->emulation_mutex);
-    int n_cycles = cpu8080_emulate_op(cpu, NULL);
+
+    // Emulate only if not halted
+    if (cpu->stopped)
+        goto unlock;
+
+    cpu8080_emulate_op(cpu, NULL, nb_cycles);
+
+unlock:
     pthread_mutex_unlock(&cpu->emulation_mutex);
-    return n_cycles;
+}
+
+void cpu8080_is_halted(Cpu8080* cpu, bool* halted)
+{
+    pthread_mutex_lock(&cpu->emulation_mutex);
+    *halted = cpu->stopped;
+    pthread_mutex_unlock(&cpu->emulation_mutex);
+}
+
+void cpu8080_is_interrupt_enabled(Cpu8080* cpu, bool* enabled)
+{
+    pthread_mutex_lock(&cpu->emulation_mutex);
+    *enabled = cpu->interrupt_enabled;
+    pthread_mutex_unlock(&cpu->emulation_mutex);
 }
 
 /** Display **/
@@ -1219,5 +1275,6 @@ void cpu8080_print_state(Cpu8080* cpu)
 
 void cpu8080_run(Cpu8080* cpu)
 {
-    while(1) cpu8080_emulate(cpu);
+    int useless;
+    while(true) cpu8080_emulate(cpu, &useless);
 }

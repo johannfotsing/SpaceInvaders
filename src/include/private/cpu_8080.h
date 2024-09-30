@@ -59,18 +59,18 @@ struct _8080
     uint8_t* memory;
     
     /// Interruption management
-    bool_t interrupt_enabled;
+    bool interrupt_enabled;
     
     /// A flag to stop the CPU
-    bool_t stopped;
+    bool stopped;
     
     /// IO
     IOPort* in;
     IOPort* out;
     output_callback_t* io_callbacks;
 
-    // Clock
-    double nsec_per_cycle;
+    // Clock frequency
+    double clock_frequency;
 
     // A mutex to handle emulation from main thread and interrupt threads
     // TODO: remove this from here !?
@@ -83,7 +83,7 @@ struct _8080
  * @param cpu       pointer to a 8080 cpu object
  * @param code      bytecode to emulate
  */
-int cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code);
+void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles);
 
 /**
  * @brief
@@ -126,10 +126,33 @@ void cpu8080_update_flags(Cpu8080* cpu, uint16_t r);
 void cpu8080_print_state(Cpu8080* cpu);
 
 
+/** Halt **/
+/************************************************/
+
+
+/**
+ * @brief 
+ *      This stops the CPU execution loop
+ * @param cpu   pointer to 8080 CPU object
+ */
+// void cpu8080_halt(Cpu8080* cpu);
+
+/**
+ * @brief 
+ *      
+ * @param cpu   pointer to 8080 CPU object
+ */
+void cpu8080_is_halted(Cpu8080* cpu, bool* halted);
+
+/**
+ * @brief 
+ *      
+ * @param cpu   pointer to 8080 CPU object
+ */
+void cpu8080_is_interrupt_enabled(Cpu8080* cpu, bool* enabled);
+
+
 /** Helper functions for arithmetic operations **/
-/************************************************/
-/************************************************/
-/************************************************/
 /************************************************/
 
 

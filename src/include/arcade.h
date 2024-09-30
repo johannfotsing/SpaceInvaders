@@ -9,24 +9,39 @@
  * 
  */
 
-#ifndef SPACEINVADERS_ARCADE
-#define SPACEINVADERS_ARCADE
+#ifndef ARCADE_H
+#define ARCADE_H
 
+#include <time.h>
+#include <stdlib.h>
 #include <SDL2/SDL.h>
+
+/// Map CPU 8080 input ports
+#define INP0        0
+#define INP1        1
+#define INP2        2
+#define SHFT_IN     3
+/// Map CPU 8080 output ports
+#define SHFT_AMNT   2
+#define SOUND1      3
+#define SHFT_DATA   4
+#define SOUND2      5
+#define WATCHDOG    6
+/// Video
+#define VIDEO_RAM_OFFSET 0x2400
+
+#define WINDOW_WIDTH    672
+#define WINDOW_HEIGHT   768
 
 typedef struct Arcade Arcade;
 
 typedef struct Screen
 {
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-    SDL_Texture* texture;
-    SDL_PixelFormat* px_format;
     int width;
     int height;
 } Screen;
 
-Arcade* arcade_init(SDL_Window* w, SDL_Renderer* rd, SDL_Texture* tx, const char* rom_folder);
+Arcade* arcade_init(const char* arcade_name, const char* rom_folder, int screen_width, int screen_height);
 
 void arcade_free(Arcade* a);
 
@@ -59,4 +74,4 @@ void on_P2_start_released(Arcade* a);
 void on_P2_right_pressed(Arcade* a);
 void on_P2_right_released(Arcade* a);
 
-#endif // SPACEINVADERS_ARCADE
+#endif // ARCADE_H

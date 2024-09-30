@@ -38,12 +38,12 @@ int main(int argc, char** argv)
     cpu8080_write_membyte(cpu, 368, 0x07);
     
     // Emulate CPU in a loop
+    int nb_steps, nb_cycles;
     while(1)
     {
-        int nb_steps;
         scanf("%d", &nb_steps);
-        for (int i=0; i<nb_steps; ++i)
-            cpu8080_emulate(cpu);
+        for (; nb_steps > 0; --nb_steps)
+            cpu8080_emulate(cpu, &nb_cycles);
     }
     
     cpu8080_free(cpu);

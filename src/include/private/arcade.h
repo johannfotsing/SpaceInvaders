@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef SPACEINVADERS_ARCADE_PRIVATE
-#define SPACEINVADERS_ARCADE_PRIVATE
+#ifndef ARCADE_PRIVATE_H
+#define ARCADE_PRIVATE_H
 
 #include <pthread.h>
 #include "../cpu_8080.h"
@@ -18,12 +18,17 @@
 
 struct Arcade
 {
+    const char* name;
     Screen display;
     Cpu8080* cpu;
     pthread_t cpu_thread;
     pthread_t display_thread;
     pthread_t video_interrupt_thread;
 };
+
+void arcade_init_display(Arcade* arcade, int screen_width, int screen_height);
+
+void arcade_init_cpu(Arcade* arcade, const char* rom_folder_path);
 
 /// Callback for shift register emulation
 void on_shift_data_available(Cpu8080* cpu);
@@ -34,6 +39,7 @@ void start_video_interruption_thread(Arcade* a);
 
 void arcade_show(Arcade* a);
 
-void arcade_screen_update(Arcade* a);
+void arcade_screen_update(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format);
+void arcade_screen_update_test(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format);
 
-#endif // SPACEINVADERS_ARCADE_PRIVATE
+#endif // ARCADE_PRIVATE_H

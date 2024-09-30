@@ -2,8 +2,7 @@
 #define CPU_8080_H
 
 #include <stdint.h>
-
-typedef uint8_t bool_t;
+#include <stdbool.h>
 
 /// 8080 structure declaration
 struct _8080;
@@ -28,7 +27,7 @@ void cpu8080_free(Cpu8080*);
  * @brief 
  * @param cpu                   pointer to a 8080 CPU object
  */
-int cpu8080_emulate(Cpu8080* cpu);
+void cpu8080_emulate(Cpu8080* cpu, int* nb_cycles);
 
 /**
  * @brief 
@@ -71,9 +70,9 @@ void cpu8080_load_rom(Cpu8080* cpu, const char* rom_path, uint16_t memory_offset
  * Generally, the interrupt instruction is used to call a predefined function in ROM using RST instructions; 
  * this way the program counter is pushed on stack and the program can resume after the interrupt routine. 
  * @param cpu                   pointer to a 8080 CPU object
- * @param interrupt_opcode      instruction to execute as Interrupt Service Routine
+ * @param isr_index             index of the interrupt subroutine to execute (one of the RSTs)
  */
-void cpu8080_generate_interruption(Cpu8080* cpu, const uint8_t* interrupt_opcode);
+void cpu8080_generate_interruption(Cpu8080* cpu, const uint8_t isr_index);
 
 /**
  * @brief

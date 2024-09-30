@@ -9,228 +9,260 @@
  * 
  */
 
-/// Map CPU 8080 input ports
-#define INP0        0
-#define INP1        1
-#define INP2        2
-#define SHFT_IN     3
-/// Map CPU 8080 output ports
-#define SHFT_AMNT   2
-#define SOUND1      3
-#define SHFT_DATA   4
-#define SOUND2      5
-#define WATCHDOG    6
-/// Video
-#define VIDEO_RAM_OFFSET 0x2400
-
 #include <unistd.h>
 #include <string.h>
 #include "../../include/arcade.h"
 #include "../../include/private/arcade.h"
 
-Arcade* arcade_init(SDL_Window* w, SDL_Renderer* rd, SDL_Texture* tx, const char* rom_folder_path)
+Arcade* arcade_init(const char* arcade_name, const char* rom_folder_path, int screen_width, int screen_height)
 {
-    Arcade* arc = (Arcade*) malloc(sizeof(Arcade));
-    
-    // Display
-    arc->display.window = w;
-    arc->display.renderer = rd;
-    arc->display.texture = tx;
-    Uint32 px_fmt;
-    SDL_QueryTexture(tx, &px_fmt, NULL, &arc->display.width, &arc->display.height);
-    arc->display.px_format = SDL_AllocFormat(px_fmt);
+    Arcade* arcade = (Arcade*) malloc(sizeof(Arcade));
+
+    // Store arcade name
+    arcade->name = arcade_name;
+
+    // Init CPU
+    arcade_init_cpu(arcade, rom_folder_path);
+
+    // Shift register init
+    cpu8080_register_output_callback(arcade->cpu, &on_shift_data_available, SHFT_AMNT);
+
+    // Init display
+    arcade_init_display(arcade, screen_width, screen_height);
+
+    return arcade;
+}
+
+void arcade_init_display(Arcade* arcade, int screen_width, int screen_height)
+{
+    arcade->display.width = screen_width;
+    arcade->display.height = screen_height;
+}
+
+void arcade_init_cpu(Arcade* arcade, const char* rom_folder_path)
+{
     
     // CPU
-    Cpu8080Config cpuCfg = {4, 8, 16, 2.e+6};
-    arc->cpu = cpu8080_init(&cpuCfg);
+    // 4 input ports
+    // 8 output ports
+    // 16kB of memory
+    // 2 MHz frequency
+    Cpu8080Config cpu_config = {4, 8, 16, 2.e+6};
+    arcade->cpu = cpu8080_init(&cpu_config);
+    
     /// Load SpaceInvaders ROM files
     size_t len = strlen(rom_folder_path);
     size_t copy_len = rom_folder_path[len-1] == '/' ? len - 1 : len;
+    
     const char* first_rom_name = "/invaders.h";
     size_t rom_filename_len = strlen(first_rom_name);
     size_t file_path_len = copy_len + rom_filename_len;
     char* rom_file_path = (char*) malloc(file_path_len + 1);
     rom_file_path = strcpy(rom_file_path, rom_folder_path);
     rom_file_path = strcat(rom_file_path, first_rom_name);
-    cpu8080_load_rom(arc->cpu, rom_file_path, 0);
+    
+    cpu8080_load_rom(arcade->cpu, rom_file_path, 0);
     rom_file_path[file_path_len-1] = 'g';
-    cpu8080_load_rom(arc->cpu, rom_file_path, 0x800);
+    cpu8080_load_rom(arcade->cpu, rom_file_path, 0x800);
     rom_file_path[file_path_len-1] = 'f';
-    cpu8080_load_rom(arc->cpu, rom_file_path, 0x1000);
+    cpu8080_load_rom(arcade->cpu, rom_file_path, 0x1000);
     rom_file_path[file_path_len-1] = 'e';
-    cpu8080_load_rom(arc->cpu, rom_file_path, 0x1800);
+    cpu8080_load_rom(arcade->cpu, rom_file_path, 0x1800);
+    
+    cpu8080_load_rom(arcade->cpu, rom_file_path, 0);
+
     free(rom_file_path);
-
-    // Shift register
-    cpu8080_register_output_callback(arc->cpu, &on_shift_data_available, SHFT_AMNT);
-
-    return arc;
 }
 
 void arcade_free(Arcade* a)
 {
+    pthread_join(a->cpu_thread, NULL);
     cpu8080_free(a->cpu);
-    SDL_FreeFormat(a->display.px_format);
     free(a);
-}
-
-void on_coin_pressed(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP1, 0, 1);
-}
-
-void on_coin_released(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP1, 0, 0);
-}
-
-void on_P2_start_pressed(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP1, 1, 1);
-}
-
-void on_P2_start_released(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP1, 1, 0);
-}
-
-void on_P1_start_pressed(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP1, 2, 1);
-}
-
-void on_P1_start_released(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP1, 2, 0);
-}
-
-void on_P1_shoot_pressed(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP1, 4, 1);
-}
-
-void on_P1_shoot_released(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP1, 4, 0);
-}
-
-void on_P1_left_pressed(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP1, 5, 1);
-}
-
-void on_P1_left_released(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP1, 5, 0);
-}
-
-void on_P1_right_pressed(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP1, 6, 1);
-}
-
-void on_P1_right_released(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP1, 6, 0);
-}
-
-void on_P2_shoot_pressed(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP2, 4, 1);
-}
-
-void on_P2_shoot_released(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP2, 4, 0);
-}
-
-void on_P2_left_pressed(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP2, 5, 1);
-}
-
-void on_P2_left_released(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP2, 5, 0);
-}
-
-void on_P2_right_pressed(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP2, 6, 1);
-}
-
-void on_P2_right_released(Arcade* a)
-{
-    cpu8080_write_io(a->cpu, INP2, 6, 0);
 }
 
 void on_shift_data_available(Cpu8080* cpu)
 {
     static uint16_t shift_register = 0x0000;
-    uint16_t shift_data = cpu8080_read_port(cpu, SHFT_DATA);
+    uint16_t shift_data;
+    cpu8080_read_port(cpu, SHFT_DATA, (uint8_t*) &shift_data);
     shift_register = ((shift_register >> 8) & 0x00ff) | ((shift_data << 8) & 0xff00);
-    uint8_t shift_offset = cpu8080_read_port(cpu, SHFT_AMNT) & 0b111; // offset is 3 bits long max
+    uint8_t shift_offset;
+    cpu8080_read_port(cpu, SHFT_AMNT, &shift_offset);
+    shift_offset &= 0b111; // offset is 3 bits long max
     uint8_t shift_result = ((shift_register << shift_offset) >> 8) & 0xff;
     cpu8080_write_port(cpu, SHFT_IN, shift_result);
 }
 
-void arcade_screen_update(Arcade* arcade)
+void arcade_screen_update_test(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format)
 {
-    /* Copy bytes from index i, j in video memory 
-       To index i_texture, j_texture in texture's pixels 
-    */
     int pitch;
-    uint8_t* texture_pixels;
-    SDL_LockTexture(arcade->display.texture, NULL, (void**) &texture_pixels, &pitch);
-    for (int byte_idx = 0; byte_idx < arcade->display.height/8; ++byte_idx)
+    Uint32* texture_pixels;
+    SDL_LockTexture(texture, NULL, (void**) &texture_pixels, &pitch);
+    for (int byte_pixel_index = 0; byte_pixel_index < arcade->display.width * arcade->display.height / 8; ++byte_pixel_index)
     {
-        uint8_t image_byte;
-        cpu8080_read_membyte(arcade->cpu, VIDEO_RAM_OFFSET + byte_idx, &image_byte);
-        for (int bit_idx = 0; bit_idx < 8; ++bit_idx)  // LSB first
+        // Read pixel values
+        /*uint8_t image_byte;
+        cpu8080_read_membyte(arcade->cpu, VIDEO_RAM_OFFSET + byte_pixel_index, &image_byte);*/
+
+        // Update texture
+        for (int pixel_index = byte_pixel_index * 8; pixel_index < (byte_pixel_index + 1) * 8; ++pixel_index)
         {
-            int px_ram_idx = byte_idx * 8 + bit_idx;
-            int i_ram = px_ram_idx / arcade->display.width;     // 0 - 223
-            int j_ram = px_ram_idx % arcade->display.height;     // 0 - 255
-            // Rotate 90deg left
-            int j_txt = i_ram;
-            int i_txt = (arcade->display.height - 1) - j_ram;
             // Turn bit pixel into color pixel
-            // SDL_Color* px_color = &BLACK_COLOR;
-            uint8_t pix_val = (image_byte & (1 << (bit_idx + 1))) * 255;
-            texture_pixels[i_txt * arcade->display.width + j_txt] = SDL_MapRGBA(arcade->display.px_format, 255 - pix_val, 255 - pix_val, 0, 255);
+            /*int bit_idx = pixel_index % 8;
+            uint8_t pix_val = (image_byte & (1 << (bit_idx + 1))) * 255;*/
+            Uint8 pix_val = rand();
+            texture_pixels[pixel_index] = SDL_MapRGB(px_format, pix_val, pix_val, pix_val);
         }
     }
-    SDL_UnlockTexture(arcade->display.texture);
-    SDL_RenderCopy(arcade->display.renderer, arcade->display.texture, NULL, NULL);
-    SDL_RenderPresent(arcade->display.renderer);
+    SDL_UnlockTexture(texture);
+
+    // Update renderer
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
+}
+
+void arcade_screen_update(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format)
+{
+    int pitch;
+    Uint32* texture_pixels;
+    SDL_LockTexture(texture, NULL, (void**) &texture_pixels, &pitch);
+    for (int byte_pixel_index = 0; byte_pixel_index < arcade->display.width * arcade->display.height / 8; ++byte_pixel_index)
+    {
+        // Read pixel values
+        uint8_t image_byte;
+        cpu8080_read_membyte(arcade->cpu, VIDEO_RAM_OFFSET + byte_pixel_index, &image_byte);
+
+        // Update texture
+        for (int pixel_index = byte_pixel_index * 8; pixel_index < (byte_pixel_index + 1) * 8; ++pixel_index)
+        {
+            // Turn bit pixel into color pixel
+            int bit_idx = pixel_index % 8;
+            uint8_t pix_val = (image_byte & (1 << (bit_idx + 1))) * 255;
+            texture_pixels[pixel_index] = SDL_MapRGB(px_format, pix_val, pix_val, pix_val);
+        }
+    }
+    SDL_UnlockTexture(texture);
+
+    // Update renderer
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, texture, NULL, NULL);
 }
 
 void arcade_show(Arcade* arcade)
 {
-    while(1)
+    SDL_Window* window = SDL_CreateWindow(
+        arcade->name,
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT,
+        SDL_WINDOW_SHOWN
+    );
+    
+    if (window == NULL)
     {
-        arcade_screen_update(arcade);
-        usleep(1e+6/10);
+        printf("window could not be created: %s\n", SDL_GetError());
+        exit(1);
     }
+
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    
+    if (renderer == NULL)
+    {
+        printf("renderer could not be created: %s\n", SDL_GetError());
+        exit(1);
+    }
+
+    SDL_Texture* texture = SDL_CreateTexture(
+        renderer,
+        SDL_PIXELFORMAT_RGB888,
+        SDL_TEXTUREACCESS_STREAMING,
+        arcade->display.width,
+        arcade->display.height
+    );
+
+    Uint32 px_format;
+    SDL_QueryTexture(texture, &px_format, NULL, NULL, NULL);
+    SDL_PixelFormat* sdl_format = SDL_AllocFormat(px_format);
+
+    // Event loop
+    SDL_Event event;
+    SDL_bool quit = SDL_FALSE;
+    
+    while (!quit)
+    {
+        arcade_screen_update(arcade, window, renderer, texture, sdl_format);
+
+        while (SDL_PollEvent(&event))
+        {
+            if (event.type == SDL_QUIT)
+                quit = SDL_TRUE;
+
+            else if (event.type == SDL_KEYDOWN)
+            {
+                switch(event.key.keysym.scancode)
+                {
+                case SDL_SCANCODE_C: on_coin_pressed(arcade);
+                // P1
+                case SDL_SCANCODE_UP: on_P1_shoot_pressed(arcade); break;
+                case SDL_SCANCODE_DOWN: on_P1_start_pressed(arcade); break;
+                case SDL_SCANCODE_LEFT: on_P1_left_pressed(arcade); break;
+                case SDL_SCANCODE_RIGHT: on_P1_right_pressed(arcade); break;
+                // P2
+                case SDL_SCANCODE_Z: on_P2_shoot_pressed(arcade); break;
+                case SDL_SCANCODE_S: on_P2_start_pressed(arcade); break;
+                case SDL_SCANCODE_Q: on_P2_left_pressed(arcade); break;
+                case SDL_SCANCODE_D: on_P2_right_pressed(arcade); break;
+                // QUIT
+                case SDL_SCANCODE_ESCAPE: quit = SDL_TRUE; break;
+                default: break;
+                }
+            }
+            else if (event.type == SDL_KEYUP)
+            {
+                switch(event.key.keysym.scancode)
+                {
+                case SDL_SCANCODE_C: on_coin_released(arcade);
+                // P1
+                case SDL_SCANCODE_UP: on_P1_shoot_released(arcade); break;
+                case SDL_SCANCODE_DOWN: on_P1_start_released(arcade); break;
+                case SDL_SCANCODE_LEFT: on_P1_left_released(arcade); break;
+                case SDL_SCANCODE_RIGHT: on_P1_right_released(arcade); break;
+                // P2
+                case SDL_SCANCODE_Z: on_P2_shoot_released(arcade); break;
+                case SDL_SCANCODE_S: on_P2_start_released(arcade); break;
+                case SDL_SCANCODE_Q: on_P2_start_released(arcade); break;
+                case SDL_SCANCODE_D: on_P2_right_released(arcade); break;
+                // QUIT
+                case SDL_SCANCODE_ESCAPE: quit = SDL_TRUE; break;
+                default: break;
+                }
+            }
+        }
+
+        SDL_RenderPresent(renderer);
+
+        SDL_Delay(16);
+    }
+
+    SDL_FreeFormat(sdl_format);
+    SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
 }
 
 void start_video_interruption_thread(Arcade* arcade)
 {
-    __useconds_t half_display_period = 1e+6/120;
-    uint8_t interrupt_number = 1;
+    // __useconds_t half_display_period = 1e+6 / 120;
+    uint8_t isr_idx = 2;
     while (1)
     {
-        usleep(half_display_period);
-        emulate_space_invaders_interruption(arcade->cpu, interrupt_number);
-        interrupt_number = 3 - interrupt_number;
+        // usleep(half_display_period);
+        cpu8080_generate_interruption(arcade->cpu, isr_idx);
+        SDL_Delay(1e+3 / 120);
+        isr_idx = 3 - isr_idx;
     }
-}
-
-void emulate_space_invaders_interruption(Cpu8080* cpu, uint8_t interrupt_number)
-{
-    uint8_t interrupt_code[] = {0xc7, 0x00, 0x00};
-    interrupt_code[1] = interrupt_number * 8;
-    cpu8080_generate_interruption(cpu, interrupt_code);
 }
 
 void arcade_start(Arcade* arcade)
@@ -238,4 +270,5 @@ void arcade_start(Arcade* arcade)
     pthread_create(&arcade->cpu_thread, NULL, cpu8080_run, arcade->cpu);
     pthread_create(&arcade->video_interrupt_thread, NULL, start_video_interruption_thread, arcade);
     pthread_create(&arcade->display_thread, NULL, arcade_show, arcade);
+    pthread_join(arcade->display_thread, NULL);
 }
