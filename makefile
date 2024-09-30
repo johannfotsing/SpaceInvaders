@@ -17,7 +17,7 @@ spaceinvaders: init
 	$(CC) -DFOR_SPACE_INVADERS $(SRC_DIR)/main/space_invaders.c $(CPU8080_SRCS) $(ARCADE_SRCS) -o $(BIN_DIR)/spaceinvaders $(LD_FLAGS)
 
 spaceinvadersd: init
-	$(CC) -g -DPRINT_OPS -DFOR_SPACE_INVADERS $(SRC_DIR)/main/space_invaders.c $(CPU8080_SRCS) $(ARCADE_SRCS) -o $(BIN_DIR)/spaceinvaders $(LD_FLAGS)
+	$(CC) -g -DPRINT_OPS -DFOR_SPACE_INVADERS $(SRC_DIR)/main/space_invaders.c $(CPU8080_SRCS) $(ARCADE_SRCS) -o $(BIN_DIR)/spaceinvadersd $(LD_FLAGS)
 
 clean:
 	rm -r bin
