@@ -11,6 +11,11 @@
 /** Constructor & destructor **/
 /******************************/
 
+void empty_fn(Cpu8080* c)
+{
+
+}
+
 Cpu8080* cpu8080_init(const Cpu8080Config* conf)
 {
     // Allocate CPU memory space
@@ -29,7 +34,7 @@ Cpu8080* cpu8080_init(const Cpu8080Config* conf)
     c->io_callbacks = (output_callback_t*) malloc(conf->out_ports * sizeof(output_callback_t));
     for (int i = 0; i < conf->out_ports; ++i)
     {
-        c->io_callbacks[i] = NULL;
+        c->io_callbacks[i] = &empty_fn;
     }
     
     // CPU state and interrupt enabling

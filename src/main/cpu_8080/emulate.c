@@ -858,8 +858,7 @@ void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles)
     {
         uint8_t port_number = opcode[1];
         cpu->out[port_number].data = cpu->a;
-        if (cpu->io_callbacks[port_number] != NULL)
-            (*cpu->io_callbacks[port_number])(cpu);
+        (*cpu->io_callbacks[port_number])(cpu);
         cpu->program_counter += 2; 
         break;		// OUT D8
     }
@@ -1226,7 +1225,7 @@ void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles)
     cpu8080_print_state(cpu);
 #endif
     if (nb_cycles != NULL)
-    *nb_cycles = cpu8080Cycles[*opcode];
+        *nb_cycles = cpu8080Cycles[*opcode];
 }
 
 void cpu8080_emulate(Cpu8080* cpu, int* nb_cycles)
