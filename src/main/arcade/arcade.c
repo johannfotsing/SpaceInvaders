@@ -90,37 +90,6 @@ void on_shift_data_available(Cpu8080* cpu)
     cpu8080_write_port(cpu, SHFT_IN, shift_result);
 }
 
-void arcade_update_display_test(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format)
-{
-    int pitch;
-    Uint32* texture_pixels;
-    SDL_LockTexture(texture, NULL, (void**) &texture_pixels, &pitch);
-    for (int byte_pixel_index = 0; byte_pixel_index < arcade->display.width * arcade->display.height / 8; ++byte_pixel_index)
-    {
-        // Read pixel values
-        /*uint8_t image_byte;
-        cpu8080_read_membyte(arcade->cpu, VIDEO_RAM_OFFSET + byte_pixel_index, &image_byte);*/
-
-        // Update texture
-        for (int pixel_index = byte_pixel_index * 8; pixel_index < (byte_pixel_index + 1) * 8; ++pixel_index)
-        {
-            // Turn bit pixel into color pixel
-            /*int bit_idx = pixel_index % 8;
-            uint8_t pix_val = (image_byte & (1 << (bit_idx + 1))) * 255;*/
-            Uint8 pix_val = rand();
-            texture_pixels[pixel_index] = SDL_MapRGB(px_format, pix_val, pix_val, pix_val);
-        }
-    }
-    SDL_UnlockTexture(texture);
-
-    // Update renderer
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, texture, NULL, NULL);
-
-    // Update window image
-    SDL_RenderPresent(renderer);
-}
-
 void arcade_update_display(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format)
 {
     int pitch;
@@ -157,44 +126,6 @@ void arcade_update_display(Arcade* arcade, SDL_Window* window, SDL_Renderer* ren
 
     // Update window image
     SDL_RenderPresent(renderer);
-}
-
-void arcade_init_SDL_components(Arcade* a, SDL_Window* w, SDL_Renderer* r, SDL_Texture* t, SDL_PixelFormat* f)
-{
-    w = SDL_CreateWindow(
-        a->name,
-        SDL_WINDOWPOS_CENTERED,
-        SDL_WINDOWPOS_CENTERED,
-        WINDOW_WIDTH,
-        WINDOW_HEIGHT,
-        SDL_WINDOW_SHOWN
-    );
-    
-    if (w == NULL)
-    {
-        printf("window could not be created: %s\n", SDL_GetError());
-        exit(1);
-    }
-
-    r = SDL_CreateRenderer(w, -1, SDL_RENDERER_ACCELERATED);
-    
-    if (r == NULL)
-    {
-        printf("renderer could not be created: %s\n", SDL_GetError());
-        exit(1);
-    }
-
-    t = SDL_CreateTexture(
-        r,
-        SDL_PIXELFORMAT_RGB888,
-        SDL_TEXTUREACCESS_STREAMING,
-        a->display.width,
-        a->display.height
-    );
-
-    Uint32 px_format;
-    SDL_QueryTexture(t, &px_format, NULL, NULL, NULL);
-    f = SDL_AllocFormat(px_format);
 }
 
 void arcade_handle_event(Arcade* a, const SDL_Event* event, bool* quit)
@@ -268,19 +199,6 @@ int arcade_emulate_video_interruptions(void* a)
     return 0;
 }
 
-void start_video_interruption_thread(Arcade* arcade)
-{
-    // __useconds_t half_display_period = 1e+6 / 120;
-    uint8_t isr_idx = 2;
-    while (1)
-    {
-        // usleep(half_display_period);
-        cpu8080_generate_interruption(arcade->cpu, isr_idx);
-        SDL_Delay(1e+3 / 120);
-        isr_idx = 3 - isr_idx;
-    }
-}
-
 int arcade_emulate_cpu(void* a)
 {
     Arcade* arcade = (Arcade*) a;
@@ -336,8 +254,8 @@ void arcade_start(Arcade* arcade)
     // Set running and create associated threads
     arcade->running = true;
     SDL_Thread* tCPU = SDL_CreateThread(arcade_emulate_cpu, "CPU", arcade);
-    SDL_Delay(1e+3);
-    SDL_Thread* tVideoInterrupt = SDL_CreateThread(arcade_emulate_video_interruptions, "VideoInterruptionEmulation", arcade);
+    SDL_Delay(5e+2);
+    SDL_Thread* tVideoInterrupt = SDL_CreateThread(arcade_emulate_video_interruptions, "VBL", arcade);
 
     arcade_update_display(arcade, window, renderer, texture, pixel_format);
 
