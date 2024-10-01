@@ -1225,6 +1225,7 @@ void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles)
 #ifdef PRINT_STATE
     cpu8080_print_state(cpu);
 #endif
+    if (nb_cycles != NULL)
     *nb_cycles = cpu8080Cycles[*opcode];
 }
 
