@@ -24,6 +24,7 @@ struct Arcade
     pthread_t cpu_thread;
     pthread_t display_thread;
     pthread_t video_interrupt_thread;
+    bool running;
 };
 
 void arcade_init_display(Arcade* arcade, int screen_width, int screen_height);
