@@ -13,6 +13,7 @@
 #define ARCADE_PRIVATE_H
 
 #include <pthread.h>
+#include "cpu_8080.h"
 #include "../cpu_8080.h"
 #include "../arcade.h"
 
@@ -40,7 +41,7 @@ void start_video_interruption_thread(Arcade* a);
 
 void arcade_show(Arcade* a);
 
-void arcade_screen_update(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format);
-void arcade_screen_update_test(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format);
+void arcade_update_display(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format);
+void arcade_update_display_test(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format);
 
 #endif // ARCADE_PRIVATE_H
