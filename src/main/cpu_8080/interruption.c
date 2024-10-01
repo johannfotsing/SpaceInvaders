@@ -22,11 +22,14 @@ void cpu8080_generate_interruption(Cpu8080* cpu, const uint8_t isr_index)
     if (op_bytes == 0)
         exit(1);
 
-    int nb_cycles;
-    cpu8080_emulate_op(cpu, interrupt_service_routine, &nb_cycles);
-    
-    // TODO: check if this is necessary
-    //cpu->interrupt_enabled = false;
+    // Push program counter
+    cpu->stack_pointer--;
+    cpu->memory[cpu->stack_pointer] = cpu->program_counter & 0xff00 >> 8;
+    cpu->stack_pointer--;
+    cpu->memory[cpu->stack_pointer] = cpu->program_counter & 0x00ff;
+    //*
+
+    cpu8080_emulate_op(cpu, interrupt_service_routine, NULL);
 
 unlock:
     pthread_mutex_unlock(&cpu->emulation_mutex);
