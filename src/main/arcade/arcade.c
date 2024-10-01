@@ -11,6 +11,8 @@
 
 #include <unistd.h>
 #include <string.h>
+#include <stdlib.h>
+#include <time.h>
 #include "../../include/arcade.h"
 #include "../../include/private/arcade.h"
 
@@ -18,14 +20,14 @@ Arcade* arcade_init(const char* arcade_name, const char* rom_folder_path, int sc
 {
     Arcade* arcade = (Arcade*) malloc(sizeof(Arcade));
 
+    // Reset running flag
+    arcade->running = false;
+
     // Store arcade name
     arcade->name = arcade_name;
 
     // Init CPU
     arcade_init_cpu(arcade, rom_folder_path);
-
-    // Shift register init
-    cpu8080_register_output_callback(arcade->cpu, &on_shift_data_available, SHFT_AMNT);
 
     // Init display
     arcade_init_display(arcade, screen_width, screen_height);
@@ -41,7 +43,6 @@ void arcade_init_display(Arcade* arcade, int screen_width, int screen_height)
 
 void arcade_init_cpu(Arcade* arcade, const char* rom_folder_path)
 {
-    
     // CPU
     // 4 input ports
     // 8 output ports
@@ -61,22 +62,25 @@ void arcade_init_cpu(Arcade* arcade, const char* rom_folder_path)
     rom_file_path = strcpy(rom_file_path, rom_folder_path);
     rom_file_path = strcat(rom_file_path, first_rom_name);
     
-    cpu8080_load_rom(arcade->cpu, rom_file_path, 0);
+    cpu8080_load_rom(arcade->cpu, rom_file_path, 0x0000);
     rom_file_path[file_path_len-1] = 'g';
-    cpu8080_load_rom(arcade->cpu, rom_file_path, 0x800);
+    cpu8080_load_rom(arcade->cpu, rom_file_path, 0x0800);
     rom_file_path[file_path_len-1] = 'f';
     cpu8080_load_rom(arcade->cpu, rom_file_path, 0x1000);
     rom_file_path[file_path_len-1] = 'e';
     cpu8080_load_rom(arcade->cpu, rom_file_path, 0x1800);
-    
-    cpu8080_load_rom(arcade->cpu, rom_file_path, 0);
 
     free(rom_file_path);
+
+    // Configure program counter for RAM in memory
+    arcade->cpu->program_counter = 0x0000;
+
+    // Shift register init
+    cpu8080_register_output_callback(arcade->cpu, &on_shift_data_available, SHFT_AMNT);
 }
 
 void arcade_free(Arcade* a)
 {
-    pthread_join(a->cpu_thread, NULL);
     cpu8080_free(a->cpu);
     free(a);
 }
@@ -94,7 +98,7 @@ void on_shift_data_available(Cpu8080* cpu)
     cpu8080_write_port(cpu, SHFT_IN, shift_result);
 }
 
-void arcade_screen_update_test(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format)
+void arcade_update_display_test(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format)
 {
     int pitch;
     Uint32* texture_pixels;
@@ -120,9 +124,12 @@ void arcade_screen_update_test(Arcade* arcade, SDL_Window* window, SDL_Renderer*
     // Update renderer
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+    // Update window image
+    SDL_RenderPresent(renderer);
 }
 
-void arcade_screen_update(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format)
+void arcade_update_display(Arcade* arcade, SDL_Window* window, SDL_Renderer* renderer, SDL_Texture* texture, SDL_PixelFormat* px_format)
 {
     int pitch;
     Uint32* texture_pixels;
@@ -131,15 +138,22 @@ void arcade_screen_update(Arcade* arcade, SDL_Window* window, SDL_Renderer* rend
     {
         // Read pixel values
         uint8_t image_byte;
-        cpu8080_read_membyte(arcade->cpu, VIDEO_RAM_OFFSET + byte_pixel_index, &image_byte);
+        cpu8080_read_membyte(arcade->cpu, 0x2000 + byte_pixel_index, &image_byte);
 
         // Update texture
         for (int pixel_index = byte_pixel_index * 8; pixel_index < (byte_pixel_index + 1) * 8; ++pixel_index)
         {
             // Turn bit pixel into color pixel
             int bit_idx = pixel_index % 8;
-            uint8_t pix_val = (image_byte & (1 << (bit_idx + 1))) * 255;
-            texture_pixels[pixel_index] = SDL_MapRGB(px_format, pix_val, pix_val, pix_val);
+            //srand(time(NULL));
+            uint8_t pix_val = (image_byte & (1 << bit_idx )) * 255;
+            // Rotate 90 degrees
+            /*uint8_t display_width = arcade->display.height;
+            uint8_t display_height = arcade->display.width;
+            int pixel_row_idx = pixel_index / arcade->display.width;
+            int pixel_col_idx = pixel_index % arcade->display.width;
+            texture_pixels[pixel_col_idx * display_width + pixel_row_idx] = SDL_MapRGB(px_format, pix_val, pix_val, pix_val);*/
+            //texture_pixels[pixel_index] = SDL_MapRGB(px_format, pix_val, pix_val, pix_val);
         }
     }
     SDL_UnlockTexture(texture);
@@ -147,10 +161,150 @@ void arcade_screen_update(Arcade* arcade, SDL_Window* window, SDL_Renderer* rend
     // Update renderer
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+    // Update window image
+    SDL_RenderPresent(renderer);
 }
 
-void arcade_show(Arcade* arcade)
+void arcade_init_SDL_components(Arcade* a, SDL_Window* w, SDL_Renderer* r, SDL_Texture* t, SDL_PixelFormat* f)
 {
+    w = SDL_CreateWindow(
+        a->name,
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT,
+        SDL_WINDOW_SHOWN
+    );
+    
+    if (w == NULL)
+    {
+        printf("window could not be created: %s\n", SDL_GetError());
+        exit(1);
+    }
+
+    r = SDL_CreateRenderer(w, -1, SDL_RENDERER_ACCELERATED);
+    
+    if (r == NULL)
+    {
+        printf("renderer could not be created: %s\n", SDL_GetError());
+        exit(1);
+    }
+
+    t = SDL_CreateTexture(
+        r,
+        SDL_PIXELFORMAT_RGB888,
+        SDL_TEXTUREACCESS_STREAMING,
+        a->display.width,
+        a->display.height
+    );
+
+    Uint32 px_format;
+    SDL_QueryTexture(t, &px_format, NULL, NULL, NULL);
+    f = SDL_AllocFormat(px_format);
+}
+
+void arcade_handle_event(Arcade* a, const SDL_Event* event, bool* quit)
+{
+    if (event->type == SDL_QUIT)
+        *quit = true;
+
+    else if (event->type == SDL_KEYDOWN)
+    {
+        switch(event->key.keysym.scancode)
+        {
+        case SDL_SCANCODE_C: on_coin_pressed(a); break;
+        // P1
+        case SDL_SCANCODE_UP: on_P1_shoot_pressed(a); break;
+        case SDL_SCANCODE_DOWN: on_P1_start_pressed(a); break;
+        case SDL_SCANCODE_LEFT: on_P1_left_pressed(a); break;
+        case SDL_SCANCODE_RIGHT: on_P1_right_pressed(a); break;
+        // P2
+        case SDL_SCANCODE_W: on_P2_shoot_pressed(a); break;
+        case SDL_SCANCODE_S: on_P2_start_pressed(a); break;
+        case SDL_SCANCODE_A: on_P2_left_pressed(a); break;
+        case SDL_SCANCODE_D: on_P2_right_pressed(a); break;
+        // QUIT
+        case SDL_SCANCODE_ESCAPE: *quit = true; break;
+        default: break;
+        }
+    }
+    else if (event->type == SDL_KEYUP)
+    {
+        switch(event->key.keysym.scancode)
+        {
+        case SDL_SCANCODE_C: on_coin_released(a); break;
+        // P1
+        case SDL_SCANCODE_UP: on_P1_shoot_released(a); break;
+        case SDL_SCANCODE_DOWN: on_P1_start_released(a); break;
+        case SDL_SCANCODE_LEFT: on_P1_left_released(a); break;
+        case SDL_SCANCODE_RIGHT: on_P1_right_released(a); break;
+        // P2
+        case SDL_SCANCODE_W: on_P2_shoot_released(a); break;
+        case SDL_SCANCODE_S: on_P2_start_released(a); break;
+        case SDL_SCANCODE_A: on_P2_start_released(a); break;
+        case SDL_SCANCODE_D: on_P2_right_released(a); break;
+        // QUIT
+        case SDL_SCANCODE_ESCAPE: *quit = true; break;
+        default: break;
+        }
+    }
+}
+
+int arcade_emulate_video_interruptions(void* a)
+{
+    Arcade* arcade = (Arcade*) a;
+    uint8_t video_isr = 1;
+    Uint32 video_interruption_period_ms = 1e+3 / (30 * 2);
+    int sleep_time;
+    Uint32 last_video_interruption_time = SDL_GetTicks();
+
+    while (arcade->running)
+    {
+        sleep_time = video_interruption_period_ms - (SDL_GetTicks() - last_video_interruption_time);
+        if (sleep_time > 0)
+            SDL_Delay(sleep_time);
+
+        last_video_interruption_time = SDL_GetTicks();
+
+        cpu8080_generate_interruption(arcade->cpu, video_isr);
+
+        video_isr = 3 - video_isr;
+    }
+
+    return 0;
+}
+
+void start_video_interruption_thread(Arcade* arcade)
+{
+    // __useconds_t half_display_period = 1e+6 / 120;
+    uint8_t isr_idx = 2;
+    while (1)
+    {
+        // usleep(half_display_period);
+        cpu8080_generate_interruption(arcade->cpu, isr_idx);
+        SDL_Delay(1e+3 / 120);
+        isr_idx = 3 - isr_idx;
+    }
+}
+
+int arcade_emulate_cpu(void* a)
+{
+    Arcade* arcade = (Arcade*) a;
+    
+    while (arcade->running)
+    {
+        cpu8080_emulate(arcade->cpu, NULL);
+    }
+
+    return 0;
+}
+
+void arcade_start(Arcade* arcade)
+{
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+
+    // Create SDL elements
     SDL_Window* window = SDL_CreateWindow(
         arcade->name,
         SDL_WINDOWPOS_CENTERED,
@@ -184,91 +338,49 @@ void arcade_show(Arcade* arcade)
 
     Uint32 px_format;
     SDL_QueryTexture(texture, &px_format, NULL, NULL, NULL);
-    SDL_PixelFormat* sdl_format = SDL_AllocFormat(px_format);
+    SDL_PixelFormat* pixel_format = SDL_AllocFormat(px_format);
+
+    // Set running and create associated threads
+    arcade->running = true;
+    SDL_Thread* tCPU = SDL_CreateThread(arcade_emulate_cpu, "CPU", arcade);
+    SDL_Delay(1e+3);
+    SDL_Thread* tVideoInterrupt = SDL_CreateThread(arcade_emulate_video_interruptions, "VideoInterruptionEmulation", arcade);
+
+    arcade_update_display(arcade, window, renderer, texture, pixel_format);
+
+    // Display variables
+    Uint32 frame_update_period_ms =  1e+3 / 30;  // 30 FPS
+    Uint32 last_upate_time = SDL_GetTicks();
+    int sleep_time;
 
     // Event loop
     SDL_Event event;
-    SDL_bool quit = SDL_FALSE;
+    bool quit = false;
     
     while (!quit)
     {
-        arcade_screen_update(arcade, window, renderer, texture, sdl_format);
-
+        // Handle all user events
         while (SDL_PollEvent(&event))
         {
-            if (event.type == SDL_QUIT)
-                quit = SDL_TRUE;
-
-            else if (event.type == SDL_KEYDOWN)
-            {
-                switch(event.key.keysym.scancode)
-                {
-                case SDL_SCANCODE_C: on_coin_pressed(arcade);
-                // P1
-                case SDL_SCANCODE_UP: on_P1_shoot_pressed(arcade); break;
-                case SDL_SCANCODE_DOWN: on_P1_start_pressed(arcade); break;
-                case SDL_SCANCODE_LEFT: on_P1_left_pressed(arcade); break;
-                case SDL_SCANCODE_RIGHT: on_P1_right_pressed(arcade); break;
-                // P2
-                case SDL_SCANCODE_Z: on_P2_shoot_pressed(arcade); break;
-                case SDL_SCANCODE_S: on_P2_start_pressed(arcade); break;
-                case SDL_SCANCODE_Q: on_P2_left_pressed(arcade); break;
-                case SDL_SCANCODE_D: on_P2_right_pressed(arcade); break;
-                // QUIT
-                case SDL_SCANCODE_ESCAPE: quit = SDL_TRUE; break;
-                default: break;
-                }
-            }
-            else if (event.type == SDL_KEYUP)
-            {
-                switch(event.key.keysym.scancode)
-                {
-                case SDL_SCANCODE_C: on_coin_released(arcade);
-                // P1
-                case SDL_SCANCODE_UP: on_P1_shoot_released(arcade); break;
-                case SDL_SCANCODE_DOWN: on_P1_start_released(arcade); break;
-                case SDL_SCANCODE_LEFT: on_P1_left_released(arcade); break;
-                case SDL_SCANCODE_RIGHT: on_P1_right_released(arcade); break;
-                // P2
-                case SDL_SCANCODE_Z: on_P2_shoot_released(arcade); break;
-                case SDL_SCANCODE_S: on_P2_start_released(arcade); break;
-                case SDL_SCANCODE_Q: on_P2_start_released(arcade); break;
-                case SDL_SCANCODE_D: on_P2_right_released(arcade); break;
-                // QUIT
-                case SDL_SCANCODE_ESCAPE: quit = SDL_TRUE; break;
-                default: break;
-                }
-            }
+            arcade_handle_event(arcade, &event, &quit);
         }
 
-        SDL_RenderPresent(renderer);
+        // Sleep until next update time
+        sleep_time = frame_update_period_ms - (SDL_GetTicks() - last_upate_time);
+        if (sleep_time > 0)
+            SDL_Delay(sleep_time);
+        last_upate_time = SDL_GetTicks();
 
-        SDL_Delay(16);
+        // Update screen
+        arcade_update_display(arcade, window, renderer, texture, pixel_format);
     }
 
-    SDL_FreeFormat(sdl_format);
+    SDL_FreeFormat(pixel_format);
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
-}
 
-void start_video_interruption_thread(Arcade* arcade)
-{
-    // __useconds_t half_display_period = 1e+6 / 120;
-    uint8_t isr_idx = 2;
-    while (1)
-    {
-        // usleep(half_display_period);
-        cpu8080_generate_interruption(arcade->cpu, isr_idx);
-        SDL_Delay(1e+3 / 120);
-        isr_idx = 3 - isr_idx;
-    }
-}
-
-void arcade_start(Arcade* arcade)
-{
-    pthread_create(&arcade->cpu_thread, NULL, cpu8080_run, arcade->cpu);
-    pthread_create(&arcade->video_interrupt_thread, NULL, start_video_interruption_thread, arcade);
-    pthread_create(&arcade->display_thread, NULL, arcade_show, arcade);
-    pthread_join(arcade->display_thread, NULL);
+    arcade->running = false;
+    SDL_WaitThread(tVideoInterrupt, NULL);
+    SDL_WaitThread(tCPU, NULL);
 }
