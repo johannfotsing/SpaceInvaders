@@ -137,15 +137,16 @@ void arcade_update_display(Arcade* arcade, SDL_Window* window, SDL_Renderer* ren
         {
             // Turn bit pixel into color pixel
             int bit_idx = pixel_index % 8;
-            //srand(time(NULL));
             uint8_t pix_val = (image_byte & (1 << bit_idx )) * 255;
             // Rotate 90 degrees
-            /*uint8_t display_width = arcade->display.height;
-            uint8_t display_height = arcade->display.width;
-            int pixel_row_idx = pixel_index / arcade->display.width;
-            int pixel_col_idx = pixel_index % arcade->display.width;
-            texture_pixels[pixel_col_idx * display_width + pixel_row_idx] = SDL_MapRGB(px_format, pix_val, pix_val, pix_val);*/
-            //texture_pixels[pixel_index] = SDL_MapRGB(px_format, pix_val, pix_val, pix_val);
+            int mem_x, mem_y, texture_x, texture_y, texture_index;
+            mem_x = pixel_index % arcade->display.height;
+            mem_y = pixel_index / arcade->display.height;
+            texture_x = mem_y;
+            texture_y = (arcade->display.height - 1) - mem_x;
+            texture_index = texture_y * arcade->display.width + texture_x;
+            //*
+            texture_pixels[texture_index] = SDL_MapRGB(px_format, pix_val, pix_val, pix_val);
         }
     }
     SDL_UnlockTexture(texture);
