@@ -647,7 +647,7 @@ void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles)
         cpu->program_counter += 1;
         break;
     }
-    case 0xbf : cpu->flags.c = cpu->a < cpu->a; cpu->flags.z = cpu->a == cpu->a; cpu->program_counter += 1; break;		// CMP A
+    case 0xbf : cpu->flags.c = false /*cpu->a < cpu->a*/; cpu->flags.z = true /*cpu->a == cpu->a*/; cpu->program_counter += 1; break;		// CMP A
     case 0xc0 :						// RNZ
     {
         cpu->program_counter += 1;

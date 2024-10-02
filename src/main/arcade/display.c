@@ -4,20 +4,12 @@
 int arcade_emulate_video_interruptions(void* a)
 {
     Arcade* arcade = (Arcade*) a;
-    uint8_t video_isr = 1;
+    
     Uint32 video_interruption_period_ms = 1e+3 / (30 * 2);
     int sleep_time;
     Uint32 last_video_interruption_time = SDL_GetTicks();
 
-    // For interruption enabling from CPU
-    /*pthread_mutex_lock(&arcade->cpu->emulation_mutex);
-    while (!arcade->cpu->interrupt_enabled)
-    {
-        SDL_Delay(2);
-    }
-    // TODO: replace this with cup_is_interrupt_enabled(arcade->cpu, enabled)*/
-    pthread_mutex_unlock(&arcade->cpu->emulation_mutex);
-
+    uint8_t video_isr = 1;
     while (arcade->running)
     {
         sleep_time = video_interruption_period_ms - (SDL_GetTicks() - last_video_interruption_time);

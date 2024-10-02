@@ -22,20 +22,8 @@ void cpu8080_generate_interruption(Cpu8080* cpu, const uint8_t isr_index)
     if (op_bytes == 0)
         exit(1);
 
-    // Push program counter
-    /*cpu->stack_pointer--;
-    cpu->memory[cpu->stack_pointer] = cpu->program_counter & 0xff00 >> 8;
-    cpu->stack_pointer--;
-    cpu->memory[cpu->stack_pointer] = cpu->program_counter & 0x00ff;*/
-    //*
-
-    //cpu->program_counter = 8 * isr_index;
     cpu8080_emulate_op(cpu, interrupt_service_routine, NULL);
 
 unlock:
     pthread_mutex_unlock(&cpu->emulation_mutex);
-    
-    // It is assumed that the interrupt service routine will re-enable interrupts at the end of its execution (TRUE from the programers manual)
-    // It is also assumed that ISR will restore Program Counter (TRUE from the programmers manual, which recommends calling RETURN which pops the previous context from stack)
-    // TODO: check if previous statements are TRUE.
 }

@@ -15,7 +15,7 @@
  */
 
 #include <stdio.h>
-#include "../include/cpu_8080.h"
+#include "../include/cpu_8080/cpu_8080.h"
 
 int main(int argc, char** argv)
 {
