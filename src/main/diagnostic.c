@@ -41,7 +41,7 @@ int main(int argc, char** argv)
     int nb_steps, nb_cycles;
     while(1)
     {
-        scanf("%d", &nb_steps);
+        fscanf(stdin, "%d", &nb_steps);
         for (; nb_steps > 0; --nb_steps)
             cpu8080_emulate(cpu, &nb_cycles);
     }
