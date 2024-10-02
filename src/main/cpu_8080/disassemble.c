@@ -5,7 +5,6 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../include/cpu_8080/cpu_8080.h"
 #include "../../include/cpu_8080/private/cpu_8080.h"
 
 

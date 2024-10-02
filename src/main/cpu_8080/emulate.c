@@ -5,7 +5,6 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../include/cpu_8080/cpu_8080.h"
 #include "../../include/cpu_8080/private/cpu_8080.h"
 
 
@@ -44,7 +43,7 @@ void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles)
     else 
         opcode = code;
 #ifdef PRINT_OPS
-//    cpu8080_disassemble_op(cpu, opcode);
+    cpu8080_disassemble_op(cpu, opcode);
 #endif
     switch (*opcode)
     {

@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef JOYSTICK_H
-#define JOYSTICK_H
+#ifndef BOARD_H
+#define BOARD_H
 
 #include "../../cpu_8080/cpu_8080.h"
 #include "../arcade.h"

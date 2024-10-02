@@ -13,10 +13,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include "../../include/arcade/arcade.h"
 #include "../../include/arcade/private/arcade.h"
 
-Arcade* arcade_init(const char* arcade_name, const char* rom_folder_path, int screen_width, int screen_height)
+Arcade* arcade_init(const char* arcade_name, const char* rom_file_path, int screen_width, int screen_height)
 {
     Arcade* arcade = (Arcade*) malloc(sizeof(Arcade));
 
@@ -27,7 +26,7 @@ Arcade* arcade_init(const char* arcade_name, const char* rom_folder_path, int sc
     arcade->name = arcade_name;
 
     // Init CPU
-    arcade_init_cpu(arcade, rom_folder_path);
+    arcade_init_cpu(arcade, rom_file_path);
 
     // Init shift register
     arcade_init_shift_register(arcade);

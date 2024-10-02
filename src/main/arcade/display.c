@@ -1,4 +1,3 @@
-#include "../../include/arcade/arcade.h"
 #include "../../include/arcade/private/arcade.h"
 
 int arcade_emulate_video_interruptions(void* a)

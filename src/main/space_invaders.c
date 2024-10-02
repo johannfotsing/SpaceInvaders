@@ -18,7 +18,7 @@
 int main(int argc, char** argv)
 {
     // Init Arcade
-    Arcade* space_invaders = arcade_init("Space Invaders", "invaders", SCREEN_WIDTH, SCREEN_HEIGHT);
+    Arcade* space_invaders = arcade_init("Space Invaders", "invaders/invaders", SCREEN_WIDTH, SCREEN_HEIGHT);
     
     // Start SpaceInvaders Arcade
     arcade_start(space_invaders);

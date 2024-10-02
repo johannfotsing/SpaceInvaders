@@ -5,7 +5,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../include/cpu_8080/cpu_8080.h"
+#include <memory.h>
 #include "../../include/cpu_8080/private/cpu_8080.h"
 
 /** Constructor & destructor **/
@@ -72,23 +72,9 @@ void cpu8080_free(Cpu8080* cpu)
 /** Memory operations **/
 /***********************/
 
-void cpu8080_load_rom(Cpu8080* cpu, const char* rom_path, uint16_t memory_offset)
+void cpu8080_load_rom(Cpu8080* cpu, uint16_t memory_offset, uint8_t* rom, size_t rom_size)
 {
-    // Open ROM file
-    FILE* rom_file = fopen(rom_path, "rb");
-    if (rom_file == NULL)
-    {
-        fprintf(stderr, "Failed to open file %s.", rom_path);
-        exit(1);
-    }
-    // Find ROM size
-    fseek(rom_file, 0L, SEEK_END);
-    int rom_size = ftell(rom_file);
-    fseek(rom_file, 0L, SEEK_SET);
-    // Copy file stream into CPU memory
-    fread(&cpu->memory[memory_offset], 1, rom_size, rom_file);
-    // Close file
-    if (fclose(rom_file) == EOF) exit(1);
+    memcpy(&cpu->memory[memory_offset], rom, rom_size);
 }
 
 void cpu8080_write_membyte(Cpu8080* cpu, uint16_t adr, uint8_t value)
@@ -120,4 +106,30 @@ void cpu8080_read_HL_membyte(Cpu8080* cpu, uint8_t* byte)
     uint16_t adr = cpu->h;
     adr = adr << 8 | cpu->l;
     cpu8080_read_membyte(cpu, adr, byte);
+}
+
+uint8_t* read_rom_from_file(const char* filepath, size_t* rom_size)
+{
+    // Open ROM file
+    FILE* rom_file = fopen(filepath, "rb");
+    if (rom_file == NULL)
+    {
+        fprintf(stderr, "Failed to open file %s.", filepath);
+        exit(1);
+    }
+    
+    // Find ROM size
+    fseek(rom_file, 0L, SEEK_END);
+    *rom_size = ftell(rom_file);
+    fseek(rom_file, 0L, SEEK_SET);
+    
+    // Copy file stream into CPU memory
+    uint8_t* rom = malloc(*rom_size);
+    fread(rom, 1, *rom_size, rom_file);
+    
+    // Close file
+    if (fclose(rom_file) == EOF)
+        exit(1);
+
+    return rom;
 }

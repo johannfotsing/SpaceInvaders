@@ -16,11 +16,6 @@
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 
-/// Video
-#define VIDEO_RAM_OFFSET 0x2400
-#define WINDOW_WIDTH    672
-#define WINDOW_HEIGHT   768
-
 typedef struct Arcade Arcade;
 
 typedef struct Screen
@@ -29,7 +24,7 @@ typedef struct Screen
     int height;
 } Screen;
 
-Arcade* arcade_init(const char* arcade_name, const char* rom_folder, int screen_width, int screen_height);
+Arcade* arcade_init(const char* arcade_name, const char* rom_file, int screen_width, int screen_height);
 
 void arcade_free(Arcade* a);
 

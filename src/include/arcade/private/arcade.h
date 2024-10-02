@@ -12,12 +12,11 @@
 #ifndef ARCADE_PRIVATE_H
 #define ARCADE_PRIVATE_H
 
-#include <pthread.h>
 #include "../../cpu_8080/cpu_8080.h"
-#include "../../cpu_8080/private/cpu_8080.h"
-#include "../arcade.h"
+#include "display.h"
 #include "shift_hardware.h"
 #include "board.h"
+#include "../arcade.h"
 
 struct Arcade
 {
@@ -25,7 +24,6 @@ struct Arcade
     Screen display;
     ShiftHardware* shifter;
     Cpu8080* cpu;
-
     bool running;
 };
 

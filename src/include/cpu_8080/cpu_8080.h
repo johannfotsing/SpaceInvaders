@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 /// 8080 structure declaration
 struct _8080;
@@ -61,7 +62,7 @@ void cpu8080_read_membyte(Cpu8080* cpu, uint16_t adr, uint8_t* byte);
  * @param rom_path          filepath to the rom file to be loaded
  * @param memory_offset     memory address in CPU where the file write should start
  */
-void cpu8080_load_rom(Cpu8080* cpu, const char* rom_path, uint16_t memory_offset);
+void cpu8080_load_rom(Cpu8080* cpu, uint16_t memory_offset, uint8_t* rom, size_t rom_size);
 
 /**
  * @brief 
@@ -158,5 +159,9 @@ void cpu8080_register_output_callback(Cpu8080* cpu, void* callback_processor, ou
  * @param cb        a callback function executed when an OUT instruction is executed in an 8080 CPU
  */
 void cpu8080_register_input_callback(Cpu8080* cpu, void* callback_processor, input_callback_t callback_fn, uint8_t port_number);
+
+// HELP FUNCTION
+
+uint8_t* read_rom_from_file(const char* filepath, size_t* rom_size);
 
 #endif // CPU_8080_H

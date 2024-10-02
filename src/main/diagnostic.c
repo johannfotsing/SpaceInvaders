@@ -24,7 +24,9 @@ int main(int argc, char** argv)
     Cpu8080* cpu = cpu8080_init(&cfg);
 
     // Load cpudiag binary into memory (with workarounds from http://www.emulator101.com/full-8080-emulation.html)
-    cpu8080_load_rom(cpu, "./diag/cpudiag.bin", 0x100);
+    size_t rom_size;
+    uint8_t* rom = read_rom_from_file("./diag/cpudiag.bin", &rom_size);
+    cpu8080_load_rom(cpu, 0x100, rom, rom_size);
     
     // Fix the first instruction to be JMP 0x100
     // Q: Why are we doing this again ?

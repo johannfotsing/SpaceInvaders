@@ -1,5 +1,5 @@
-#ifndef SHIFT_REGISTER_H
-#define SHIFT_REGISTER_H
+#ifndef SHIFT_HARDWARE_H
+#define SHIFT_HARDWARE_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -16,4 +16,4 @@ void shift_register_set_offset(ShiftHardware* h, uint8_t offset);
 
 uint8_t shift_register_get(ShiftHardware* h);
 
-#endif //SHIFT_REGISTER_H
+#endif //SHIFT_HARDWARE_H
