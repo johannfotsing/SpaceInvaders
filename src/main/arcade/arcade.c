@@ -37,12 +37,6 @@ Arcade* arcade_init(const char* arcade_name, const char* rom_file_path, int scre
     return arcade;
 }
 
-void arcade_init_display(Arcade* arcade, int screen_width, int screen_height)
-{
-    arcade->display.width = screen_width;
-    arcade->display.height = screen_height;
-}
-
 void arcade_free(Arcade* a)
 {
     cpu8080_free(a->cpu);
@@ -94,7 +88,10 @@ void arcade_start(Arcade* arcade)
     SDL_Thread* tCPU = SDL_CreateThread(arcade_emulate_cpu, "CPU", arcade);
     SDL_Thread* tVideoInterrupt = SDL_CreateThread(arcade_emulate_video_interruptions, "VBL", arcade);
 
-    arcade_update_display(arcade, window, renderer, texture, pixel_format);
+    // Setup arcade
+    cpu8080_write_port(arcade->cpu, IN_PORT_1, 0x01);
+    cpu8080_write_port(arcade->cpu, IN_PORT_2, 0x00);
+    cpu8080_write_port(arcade->cpu, IN_PORT_0, 0b00001110);
 
     // Display variables
     Uint32 frame_update_period_ms =  1e+3 / 30;  // 30 FPS

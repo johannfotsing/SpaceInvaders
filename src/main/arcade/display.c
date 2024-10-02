@@ -1,5 +1,11 @@
 #include "../../include/arcade/private/arcade.h"
 
+void arcade_init_display(Arcade* arcade, int screen_width, int screen_height)
+{
+    arcade->display.width = screen_width;
+    arcade->display.height = screen_height;
+}
+
 int arcade_emulate_video_interruptions(void* a)
 {
     Arcade* arcade = (Arcade*) a;

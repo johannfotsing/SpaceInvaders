@@ -2,7 +2,7 @@
 #define DISPLAY_H
 
 /// Video
-#define VIDEO_RAM_OFFSET    0x2000
+#define VIDEO_RAM_OFFSET    0x2400
 #define WINDOW_WIDTH        672
 #define WINDOW_HEIGHT       768
 
