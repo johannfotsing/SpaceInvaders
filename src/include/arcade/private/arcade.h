@@ -16,14 +16,14 @@
 #include "../../cpu_8080/cpu_8080.h"
 #include "../../cpu_8080/private/cpu_8080.h"
 #include "../arcade.h"
-#include "shiftregister.h"
+#include "shift_hardware.h"
 #include "board.h"
 
 struct Arcade
 {
     const char* name;
     Screen display;
-    ShiftRegister* shifter;
+    ShiftHardware* shifter;
     Cpu8080* cpu;
 
     bool running;
