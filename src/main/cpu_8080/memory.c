@@ -5,15 +5,20 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../include/cpu_8080.h"
-#include "../../include/private/cpu_8080.h"
+#include "../../include/cpu_8080/cpu_8080.h"
+#include "../../include/cpu_8080/private/cpu_8080.h"
 
 /** Constructor & destructor **/
 /******************************/
 
-void empty_fn(Cpu8080* c)
+void output_unlinked(void* c, uint8_t data)
 {
 
+}
+
+uint8_t input_unlinked(void* c)
+{
+    return 0;
 }
 
 Cpu8080* cpu8080_init(const Cpu8080Config* conf)
@@ -30,15 +35,26 @@ Cpu8080* cpu8080_init(const Cpu8080Config* conf)
     c->in = (IOPort*) malloc(conf->in_ports * sizeof(IOPort));
     c->out = (IOPort*) malloc(conf->out_ports * sizeof(IOPort));
     
-    // Allocate callbacks array
-    c->io_callbacks = (output_callback_t*) malloc(conf->out_ports * sizeof(output_callback_t));
+    // Allocate output callbacks array
+    c->output_callbacks = (output_callback_t*) malloc(conf->out_ports * sizeof(output_callback_t));
+    c->output_processors = (void**) malloc(sizeof(void*) * conf->out_ports);
     for (int i = 0; i < conf->out_ports; ++i)
     {
-        c->io_callbacks[i] = &empty_fn;
+        c->output_processors[i] = c;
+        c->output_callbacks[i] = &output_unlinked;
+    }
+    
+    // Allocate output callbacks array
+    c->input_callbacks = (input_callback_t*) malloc(conf->in_ports * sizeof(input_callback_t));
+    c->input_processors = (void**) malloc(sizeof(void*) * conf->in_ports);
+    for (int i = 0; i < conf->in_ports; ++i)
+    {
+        c->input_processors[i] = c;
+        c->input_callbacks[i] = &input_unlinked;
     }
     
     // CPU state and interrupt enabling
-    c->interrupt_enabled = true;
+    c->interrupt_enabled = false;
     c->stopped = false;
 
     return c;
@@ -46,7 +62,7 @@ Cpu8080* cpu8080_init(const Cpu8080Config* conf)
 
 void cpu8080_free(Cpu8080* cpu)
 {
-    free(cpu->io_callbacks);
+    free(cpu->output_callbacks);
     free(cpu->in);
     free(cpu->out);
     free(cpu->memory);

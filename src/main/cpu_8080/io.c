@@ -5,8 +5,8 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../include/cpu_8080.h"
-#include "../../include/private/cpu_8080.h"
+#include "../../include/cpu_8080/cpu_8080.h"
+#include "../../include/cpu_8080/private/cpu_8080.h"
 
 /** IO operations **/
 /*******************/
@@ -44,7 +44,14 @@ void cpu8080_read_port(Cpu8080* cpu, int port_number, uint8_t* byte)
     *byte = cpu->out[port_number].data;
 }
 
-void cpu8080_register_output_callback(Cpu8080* cpu, output_callback_t cb, uint8_t port_number)
+void cpu8080_register_output_callback(Cpu8080* cpu, void* caller, output_callback_t callback_fn, uint8_t port_number)
 {
-    cpu->io_callbacks[port_number] = cb;
+    cpu->output_processors[port_number] = caller;
+    cpu->output_callbacks[port_number] = callback_fn;
+}
+
+void cpu8080_register_input_callback(Cpu8080* cpu, void* caller, input_callback_t callback_fn, uint8_t port_number)
+{
+    cpu->input_processors[port_number] = caller;
+    cpu->input_callbacks[port_number] = callback_fn;
 }

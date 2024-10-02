@@ -5,8 +5,8 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../include/cpu_8080.h"
-#include "../../include/private/cpu_8080.h"
+#include "../../include/cpu_8080/cpu_8080.h"
+#include "../../include/cpu_8080/private/cpu_8080.h"
 
 
 /** Emulation **/
@@ -44,7 +44,7 @@ void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles)
     else 
         opcode = code;
 #ifdef PRINT_OPS
-    cpu8080_disassemble_op(cpu, opcode);
+//    cpu8080_disassemble_op(cpu, opcode);
 #endif
     switch (*opcode)
     {
@@ -854,13 +854,13 @@ void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles)
         cpu->program_counter = (cpu->program_counter << 8) | opcode[1];
         break;
     }
-    case 0xd3 :
+    case 0xd3 :		                // OUT D8
     {
         uint8_t port_number = opcode[1];
         cpu->out[port_number].data = cpu->a;
-        (*cpu->io_callbacks[port_number])(cpu);
+        (*cpu->output_callbacks[port_number])(cpu->output_processors[port_number], cpu->out[port_number].data);
         cpu->program_counter += 2; 
-        break;		// OUT D8
+        break;
     }
     case 0xd4 :						// CNC adr
     {
@@ -924,7 +924,14 @@ void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles)
         cpu->program_counter = (cpu->program_counter << 8) | opcode[1];
         break;
     }
-    case 0xdb : cpu->a = cpu->in[opcode[1]].data; cpu->program_counter += 2; break;		// IN D8
+    case 0xdb : 		            // IN D8
+    {
+        uint8_t port_number = opcode[1];
+        cpu->in[port_number].data = (*cpu->input_callbacks[port_number])(cpu->input_processors[port_number]);
+        cpu->a = cpu->in[port_number].data;
+        cpu->program_counter += 2;
+        break;
+    }
     case 0xdc :						// CC adr
     {
         cpu->program_counter += 3;

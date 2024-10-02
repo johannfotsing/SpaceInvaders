@@ -5,8 +5,8 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../include/cpu_8080.h"
-#include "../../include/private/cpu_8080.h"
+#include "../../include/cpu_8080/cpu_8080.h"
+#include "../../include/cpu_8080/private/cpu_8080.h"
 
 
 void cpu8080_generate_interruption(Cpu8080* cpu, const uint8_t isr_index)
@@ -23,12 +23,13 @@ void cpu8080_generate_interruption(Cpu8080* cpu, const uint8_t isr_index)
         exit(1);
 
     // Push program counter
-    cpu->stack_pointer--;
+    /*cpu->stack_pointer--;
     cpu->memory[cpu->stack_pointer] = cpu->program_counter & 0xff00 >> 8;
     cpu->stack_pointer--;
-    cpu->memory[cpu->stack_pointer] = cpu->program_counter & 0x00ff;
+    cpu->memory[cpu->stack_pointer] = cpu->program_counter & 0x00ff;*/
     //*
 
+    //cpu->program_counter = 8 * isr_index;
     cpu8080_emulate_op(cpu, interrupt_service_routine, NULL);
 
 unlock:

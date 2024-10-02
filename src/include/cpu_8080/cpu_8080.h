@@ -74,6 +74,26 @@ void cpu8080_load_rom(Cpu8080* cpu, const char* rom_path, uint16_t memory_offset
  */
 void cpu8080_generate_interruption(Cpu8080* cpu, const uint8_t isr_index);
 
+// In ports
+#define IN_PORT_0 0
+#define IN_PORT_1 1
+#define IN_PORT_2 2
+#define IN_PORT_3 3
+#define IN_PORT_4 4
+#define IN_PORT_5 5
+#define IN_PORT_6 6
+#define IN_PORT_7 7
+
+// Out ports
+#define OUT_PORT_0 0
+#define OUT_PORT_1 1
+#define OUT_PORT_2 2
+#define OUT_PORT_3 3
+#define OUT_PORT_4 4
+#define OUT_PORT_5 5
+#define OUT_PORT_6 6
+#define OUT_PORT_7 7
+
 /**
  * @brief
  *      This function reads a specific bit on an IO port on a 8080 CPU
@@ -114,7 +134,10 @@ void cpu8080_read_port(Cpu8080* cpu, int port_number, uint8_t* byte);
 void cpu8080_write_port(Cpu8080* cpu, int port_number, uint8_t value);
 
 /// Output callback signature.
-typedef void (*output_callback_t)(Cpu8080*);
+typedef void (*output_callback_t)(void*, uint8_t);
+
+/// Output callback signature.
+typedef uint8_t (*input_callback_t)(void*);
 
 /**
  * @brief Register a function to be called on output operation in an 8080 CPU
@@ -124,6 +147,16 @@ typedef void (*output_callback_t)(Cpu8080*);
  * @param cpu       pointer to a 8080 CPU object
  * @param cb        a callback function executed when an OUT instruction is executed in an 8080 CPU
  */
-void cpu8080_register_output_callback(Cpu8080* cpu, output_callback_t cb, uint8_t port_number);
+void cpu8080_register_output_callback(Cpu8080* cpu, void* callback_processor, output_callback_t callback_fn, uint8_t port_number);
+
+/**
+ * @brief Register a function to be called on output operation in an 8080 CPU
+ * One can register as much callbacks as there are output ports.
+ * The CPU is initialized with a fix number of IO ports.
+ * For the moment, the validity of the port_number argument is not verified.
+ * @param cpu       pointer to a 8080 CPU object
+ * @param cb        a callback function executed when an OUT instruction is executed in an 8080 CPU
+ */
+void cpu8080_register_input_callback(Cpu8080* cpu, void* callback_processor, input_callback_t callback_fn, uint8_t port_number);
 
 #endif // CPU_8080_H

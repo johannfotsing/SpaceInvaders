@@ -5,8 +5,8 @@
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../../include/cpu_8080.h"
-#include "../../include/private/cpu_8080.h"
+#include "../../include/cpu_8080/cpu_8080.h"
+#include "../../include/cpu_8080/private/cpu_8080.h"
 
 uint8_t cpu8080_ALU_add(Cpu8080* cpu, uint8_t a, uint8_t b)
 {

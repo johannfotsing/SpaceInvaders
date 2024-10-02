@@ -67,7 +67,10 @@ struct _8080
     /// IO
     IOPort* in;
     IOPort* out;
-    output_callback_t* io_callbacks;
+    output_callback_t* output_callbacks;
+    void** output_processors;
+    input_callback_t* input_callbacks;
+    void** input_processors;
 
     // Clock frequency
     double clock_frequency;

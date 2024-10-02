@@ -10,7 +10,7 @@
  */
 
 #include <SDL2/SDL.h>
-#include "../include/arcade.h"
+#include "../include/arcade/arcade.h"
 
 #define SCREEN_WIDTH    224
 #define SCREEN_HEIGHT   256
