@@ -17,7 +17,7 @@
 #include "../../cpu_8080/private/cpu_8080.h"
 #include "../arcade.h"
 #include "shiftregister.h"
-#include "joystick.h"
+#include "board.h"
 
 struct Arcade
 {
