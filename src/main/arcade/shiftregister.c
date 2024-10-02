@@ -4,7 +4,7 @@
 
 #define SHIFT_DATA_PORT     OUT_PORT_4        // where the data to shift is output by the CPU --> emplace_high
 #define SHIFT_OFFSET_PORT   OUT_PORT_2        // where offset is output by the CPU            --> set_offset
-#define SHIFT_RESULT_PORT   IN_PORT_1         // where shift result is read by the CPU        --> get shift result
+#define SHIFT_RESULT_PORT   IN_PORT_3         // where shift result is read by the CPU        --> get shift result
 
 
 void shift_register_emplace_high(ShiftRegister* reg, uint8_t data)
