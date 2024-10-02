@@ -779,8 +779,11 @@ void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles)
                 uint16_t offset = (cpu->d << 8) | (cpu->e);
                 char *str = &cpu->memory[offset + 3];  //skip the prefix bytes
                 while (*str != '$')
-                    printf("%c", *str++);
-                printf("\n");
+                {
+                    // print character with last callback (hopefully it has not been registered by a device)
+                    (*cpu->output_callbacks[7])(cpu->output_processors[7], *str++);
+                }
+                (*cpu->output_callbacks[7])(cpu->output_processors[7], '\n');
             }
             else if (cpu->c == 2)
             {    

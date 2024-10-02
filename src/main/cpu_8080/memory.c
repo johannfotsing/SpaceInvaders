@@ -13,7 +13,7 @@
 
 void output_unlinked(void* c, uint8_t data)
 {
-
+    fprintf(stdout, "%c", data);
 }
 
 uint8_t input_unlinked(void* c)
