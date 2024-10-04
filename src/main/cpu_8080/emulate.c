@@ -37,6 +37,13 @@ uint8_t cpu8080Cycles[] =
 
 void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles)
 {
+    // No emulation when CPU is halted
+    if (cpu->halted)
+    {
+        nb_cycles = 0;
+        return;
+    }
+
     const uint8_t* opcode;
     if (code == NULL)
         opcode = &cpu->memory[cpu->program_counter];
@@ -373,7 +380,7 @@ void cpu8080_emulate_op(Cpu8080* cpu, const uint8_t* code, int* nb_cycles)
     case 0x73 : cpu8080_write_HL_membyte(cpu, cpu->e); cpu->program_counter += 1; break;			// MOV M,E
     case 0x74 : cpu8080_write_HL_membyte(cpu, cpu->h); cpu->program_counter += 1; break;			// MOV M,H
     case 0x75 : cpu8080_write_HL_membyte(cpu, cpu->l); cpu->program_counter += 1; break;			// MOV M,L
-    case 0x76 : cpu->program_counter += 1; cpu->stopped = false; break;		    // HLT
+    case 0x76 : cpu->program_counter += 1; cpu->halted = true; break;		    // HLT
     case 0x77 : cpu8080_write_HL_membyte(cpu, cpu->a); cpu->program_counter += 1; break;			// MOV M,A
     case 0x78 : cpu->a = cpu->b; cpu->program_counter += 1; break;				// MOV A,B
     case 0x79 : cpu->a = cpu->c; cpu->program_counter += 1; break;				// MOV A,C
@@ -1242,7 +1249,7 @@ void cpu8080_emulate(Cpu8080* cpu, int* nb_cycles)
     pthread_mutex_lock(&cpu->emulation_mutex);
 
     // Emulate only if not halted
-    if (cpu->stopped)
+    if (cpu->halted)
         goto unlock;
 
     cpu8080_emulate_op(cpu, NULL, nb_cycles);
@@ -1254,7 +1261,7 @@ unlock:
 void cpu8080_is_halted(Cpu8080* cpu, bool* halted)
 {
     pthread_mutex_lock(&cpu->emulation_mutex);
-    *halted = cpu->stopped;
+    *halted = cpu->halted;
     pthread_mutex_unlock(&cpu->emulation_mutex);
 }
 

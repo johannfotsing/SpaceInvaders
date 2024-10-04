@@ -62,7 +62,7 @@ struct _8080
     bool interrupt_enabled;
     
     /// A flag to stop the CPU
-    bool stopped;
+    bool halted;
     
     /// IO
     IOPort* in;

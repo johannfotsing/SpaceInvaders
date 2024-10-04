@@ -55,7 +55,7 @@ Cpu8080* cpu8080_init(const Cpu8080Config* conf)
     
     // CPU state and interrupt enabling
     c->interrupt_enabled = false;
-    c->stopped = false;
+    c->halted = false;
 
     return c;
 }

@@ -16,6 +16,9 @@ void cpu8080_generate_interruption(Cpu8080* cpu, const uint8_t isr_index)
     if (!cpu->interrupt_enabled)
         goto unlock;
 
+    // Reset halted state
+    cpu->halted = false;
+
     uint8_t interrupt_service_routine[] = {0xc7 + 8 * isr_index, 0x00, 0x00};
     int op_bytes = cpu8080_disassemble_op(cpu, interrupt_service_routine);
     if (op_bytes == 0)
