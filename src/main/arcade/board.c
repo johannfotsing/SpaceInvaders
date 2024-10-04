@@ -2,15 +2,18 @@
 #include <string.h>
 #include "../../include/arcade/private/arcade.h"
 
+#define PRESSED true
+#define RELEASED false
+
 
 void on_coin_pressed(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_1, 0, 1);
+    cpu8080_write_io(a->cpu, IN_PORT_1, BIT_INSERT_COIN, PRESSED);
 }
 
 void on_coin_released(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_1, 0, 0);
+    cpu8080_write_io(a->cpu, IN_PORT_1, BIT_INSERT_COIN, RELEASED);
 }
 
 
@@ -18,22 +21,22 @@ void on_coin_released(Arcade* a)
 
 void on_P1_start_pressed(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_1, 2, 1);
+    cpu8080_write_io(a->cpu, IN_PORT_1, BIT_P1_START, PRESSED);
 }
 
 void on_P1_start_released(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_1, 2, 0);
+    cpu8080_write_io(a->cpu, IN_PORT_1, BIT_P1_START, RELEASED);
 }
 
 void on_P2_start_pressed(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_1, 1, 1);
+    cpu8080_write_io(a->cpu, IN_PORT_1, BIT_P2_START, PRESSED);
 }
 
 void on_P2_start_released(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_1, 1, 0);
+    cpu8080_write_io(a->cpu, IN_PORT_1, BIT_P2_START, RELEASED);
 }
 
 
@@ -41,22 +44,22 @@ void on_P2_start_released(Arcade* a)
 
 void on_P1_shoot_pressed(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_1, 4, 1);
+    cpu8080_write_io(a->cpu, IN_PORT_1, BIT_P1_SHOOT, PRESSED);
 }
 
 void on_P1_shoot_released(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_1, 4, 0);
+    cpu8080_write_io(a->cpu, IN_PORT_1, BIT_P1_SHOOT, RELEASED);
 }
 
 void on_P2_shoot_pressed(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_2, 4, 1);
+    cpu8080_write_io(a->cpu, IN_PORT_2, BIT_P2_SHOOT, PRESSED);
 }
 
 void on_P2_shoot_released(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_2, 4, 0);
+    cpu8080_write_io(a->cpu, IN_PORT_2, BIT_P2_SHOOT, RELEASED);
 }
 
 
@@ -64,22 +67,22 @@ void on_P2_shoot_released(Arcade* a)
 
 void on_P1_left_pressed(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_1, 5, 1);
+    cpu8080_write_io(a->cpu, IN_PORT_1, BIT_P1_LEFT, PRESSED);
 }
 
 void on_P1_left_released(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_1, 5, 0);
+    cpu8080_write_io(a->cpu, IN_PORT_1, BIT_P1_LEFT, RELEASED);
 }
 
 void on_P2_left_pressed(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_2, 5, 1);
+    cpu8080_write_io(a->cpu, IN_PORT_2, BIT_P2_LEFT, PRESSED);
 }
 
 void on_P2_left_released(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_2, 5, 0);
+    cpu8080_write_io(a->cpu, IN_PORT_2, BIT_P2_LEFT, RELEASED);
 }
 
 
@@ -88,22 +91,22 @@ void on_P2_left_released(Arcade* a)
 
 void on_P1_right_pressed(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_1, 6, 1);
+    cpu8080_write_io(a->cpu, IN_PORT_1, BIT_P1_RIGHT, PRESSED);
 }
 
 void on_P1_right_released(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_1, 6, 0);
+    cpu8080_write_io(a->cpu, IN_PORT_1, BIT_P1_RIGHT, RELEASED);
 }
 
 void on_P2_right_pressed(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_2, 6, 1);
+    cpu8080_write_io(a->cpu, IN_PORT_2, BIT_P2_RIGHT, PRESSED);
 }
 
 void on_P2_right_released(Arcade* a)
 {
-    cpu8080_write_io(a->cpu, IN_PORT_2, 6, 0);
+    cpu8080_write_io(a->cpu, IN_PORT_2, BIT_P2_RIGHT, RELEASED);
 }
 
 void arcade_handle_joystick_event(Arcade* a, const SDL_Event* event, bool* quit)
